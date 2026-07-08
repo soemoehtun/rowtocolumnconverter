@@ -19,10 +19,9 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #F6F8FA; }
-        @media (max-width: 640px) { body { background-color: #FFFFFF; } }
-        code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
-        pre { font-family: 'JetBrains Mono', monospace; }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: linear-gradient(145deg, #eef0f4 0%, #e4e6eb 100%); }
+        @media (max-width: 640px) { body { background: #FFFFFF; } }
+
         #lstColumns, #lstPivot {
             width: 100%;
             border: 1px solid #D0D7DE;
@@ -45,6 +44,9 @@
             background: #2F81F7 linear-gradient(0deg, #2F81F7 0%, #2F81F7 100%) !important;
             color: #fff !important;
             font-weight: 500;
+        }
+        @media (min-width: 768px) {
+            #lstColumns, #lstPivot { min-height: 260px; }
         }
         #lstColumns option:checked:hover, #lstPivot option:checked:hover {
             background: #388BFD linear-gradient(0deg, #388BFD 0%, #388BFD 100%);
@@ -83,19 +85,22 @@
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
         }
+        code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+        pre { font-family: 'JetBrains Mono', monospace; }
         @media (max-width: 640px) {
             .page-card { padding: 16px !important; }
             .page-header { padding: 14px 16px 12px !important; }
+            .page-header-title { font-size: 17px !important; }
             .page-header-sub { font-size: 10px !important; }
         }
     </style>
 </head>
 <body class="min-h-screen">
-    <div class="mx-auto px-0 sm:px-4 py-0 sm:py-10" style="max-width: 800px;">
+    <div class="mx-auto px-0 sm:px-4 py-0 sm:py-10" style="max-width: 960px;">
         <div id="tool-content">
-            <div class="md:border md:rounded-lg" style="background-color: #FFFFFF; border-color: #D0D7DE; overflow: hidden;">
+            <div class="md:border" style="background-color: #FFFFFF; border-color: #D0D7DE; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
                 <div class="page-header" style="background: #0a2540; padding: 18px 24px 14px;">
-                    <div class="page-header-title" style="font-size: clamp(15px, 4vw, 24px); font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1;">Excel Row-to-Column Conversion Tool</div>
+                    <div class="page-header-title" style="font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1;">Excel Row-to-Column Conversion Tool</div>
                     <div class="page-header-sub hidden sm:block" style="font-size: 12px; color: #fff; margin-top: 8px;">Transform wide-format data into long format by unpivoting selected columns. 100% client-side.</div>
                 </div>
                 <div class="page-card" style="padding: 24px 28px 28px;">
@@ -156,36 +161,38 @@
                 <hr class="my-5" style="border-color: #D0D7DE;">
 
                 <h2 class="text-base font-semibold mb-2" style="color: #2F81F7;">Select Columns</h2>
-                <div class="flex flex-col gap-5">
+                <div class="flex flex-col md:grid md:grid-cols-2 gap-5">
                     <!-- Keep Columns -->
                     <div>
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                            <h3 class="text-sm font-semibold text-[#1F2328]">Columns to Keep <span class="text-xs font-normal text-[#656D76]">(Select Multiple)</span></h3>
-                            <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer self-start sm:self-auto">
+                        <div class="mb-1">
+                            <h3 class="text-sm font-semibold text-[#1F2328]">Columns to Keep</h3>
+                        </div>
+                        <p class="text-xs text-[#656D76] mb-2">These columns will appear in every output row</p>
+                        <div class="flex items-center gap-1.5 mb-2">
+                            <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
                                 <input type="checkbox" id="chkSelectAllKeep" class="custom-checkbox">
                                 Select All
                             </label>
                         </div>
-                        <p class="text-xs text-[#656D76] mb-2">These columns will appear in every output row</p>
                         <select id="lstColumns" multiple size="6" class="w-full"></select>
                     </div>
 
                     <!-- Pivot Columns -->
                     <div>
-                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1">
-                            <h3 class="text-sm font-semibold text-[#1F2328]">Columns to Pivot <span class="text-xs font-normal text-[#656D76]">(Select Multiple)</span></h3>
-                            <div class="flex items-center gap-3">
-                                <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
-                                    <input type="checkbox" id="chkIncludeHeader" checked class="custom-checkbox">
-                                    Include Pivot Column Name
-                                </label>
-                                <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
-                                    <input type="checkbox" id="chkSelectAllPivot" class="custom-checkbox">
-                                    Select All
-                                </label>
-                            </div>
+                        <div class="mb-1">
+                            <h3 class="text-sm font-semibold text-[#1F2328]">Columns to Pivot</h3>
                         </div>
                         <p class="text-xs text-[#656D76] mb-2">These columns will be converted to rows</p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
+                                <input type="checkbox" id="chkIncludeHeader" checked class="custom-checkbox">
+                                Include Pivot Column Name
+                            </label>
+                            <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
+                                <input type="checkbox" id="chkSelectAllPivot" class="custom-checkbox">
+                                Select All
+                            </label>
+                        </div>
                         <select id="lstPivot" multiple size="6" class="w-full"></select>
                     </div>
                 </div>
