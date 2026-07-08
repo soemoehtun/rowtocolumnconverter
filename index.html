@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Excel Row-to-Column Conversion Tool</title>
+    <meta property="og:title" content="Excel Row-to-Column Conversion Tool">
+    <meta property="og:description" content="Transform wide-format data into long format by unpivoting selected columns. 100% client-side.">
+    <meta property="og:image" content="https://soemoehtun.github.io/Excel-Row-To-Column-Converter/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://soemoehtun.github.io/Excel-Row-To-Column-Converter/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #F6F8FA; }
+        code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
+        pre { font-family: 'JetBrains Mono', monospace; }
+        #lstColumns, #lstPivot {
+            width: 100%;
+            border: 1px solid #D0D7DE;
+            border-radius: 6px;
+            padding: 4px;
+            background: #FFFFFF;
+            font-size: 13px;
+            color: #1F2328;
+            outline: none;
+        }
+        #lstColumns option, #lstPivot option {
+            padding: 6px 10px;
+            border-radius: 4px;
+            margin: 1px 0;
+        }
+        #lstColumns option:hover, #lstPivot option:hover {
+            background-color: #F3F4F6;
+        }
+        #lstColumns option:checked, #lstPivot option:checked {
+            background: #2F81F7 linear-gradient(0deg, #2F81F7 0%, #2F81F7 100%);
+            color: #FFFFFF;
+            font-weight: 500;
+        }
+        #lstColumns option:checked:hover, #lstPivot option:checked:hover {
+            background: #388BFD linear-gradient(0deg, #388BFD 0%, #388BFD 100%);
+        }
+        .dropzone-drag-over {
+            border-color: #2F81F7 !important;
+            background-color: #F0F6FF !important;
+        }
+        .sheet-option:hover {
+            background-color: #F3F4F6;
+        }
+        .custom-checkbox {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border: 1px solid #D0D7DE;
+            border-radius: 3px;
+            background: #FFFFFF;
+            cursor: pointer;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .custom-checkbox:checked {
+            background: #2F81F7;
+            border-color: #2F81F7;
+        }
+        .custom-checkbox:checked::after {
+            content: '';
+            position: absolute;
+            left: 4px;
+            top: 1px;
+            width: 6px;
+            height: 10px;
+            border: solid #FFFFFF;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="mx-auto px-4 py-6 sm:py-10" style="max-width: 768px;">
+        <div id="tool-content">
+            <div class="rounded-lg border p-4 sm:p-6" style="background-color: #FFFFFF; border-color: #D0D7DE;">
+                <h1 class="text-lg sm:text-xl font-semibold text-[#2F81F7] mb-4" style="letter-spacing: -0.02em;">Excel Row-to-Column Conversion Tool</h1>
+
+                <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xlsb" class="hidden">
+
+                <h3 class="text-base font-medium text-[#1F2328] mt-4 mb-1">Upload Data File <span class="text-sm font-normal text-[#656D76]">(CSV, TXT, XLSX, XLSB)</span></h3>
+
+                <!-- Dropzone -->
+                <div id="dropzone" class="flex h-40 cursor-pointer flex-col items-center justify-center gap-3 rounded-md border-2 border-dashed transition-colors" style="border-color: #D0D7DE; background-color: #F6F8FA;" onmouseover="this.style.backgroundColor='#EFF1F3'" onmouseout="this.style.backgroundColor='#F6F8FA'">
+                    <div class="rounded-full p-2.5" style="background-color: #FFFFFF; border: 1px solid #D0D7DE;">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                        </svg>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-sm font-medium text-[#1F2328]">Click to select</p>
+                        <p class="text-xs text-[#656D76] mt-0.5">or drag and drop file here</p>
+                    </div>
+                </div>
+
+                <!-- File info -->
+                <div id="fileInfoArea" class="hidden rounded-md border mt-3" style="border-color: #D0D7DE; background-color: #F6F8FA;">
+                    <div class="flex items-center gap-3 px-4 py-3">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                            <polyline points="14 2 14 8 20 8"/>
+                            <line x1="16" y1="13" x2="8" y2="13"/>
+                            <line x1="16" y1="17" x2="8" y2="17"/>
+                        </svg>
+                        <span id="fileName" class="text-sm text-[#1F2328] truncate flex-1"></span>
+                        <button id="btnRemoveFile" class="rounded p-1 hover:bg-[#EFF1F3] transition-colors cursor-pointer" style="border: none; background: transparent;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"/>
+                                <line x1="6" y1="6" x2="18" y2="18"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="px-4 py-2.5" style="border-top: 1px solid #D0D7DE;">
+                        <span class="text-xs font-medium text-[#656D76]">Sheet</span>
+                        <div class="relative mt-1" id="sheetDropdown">
+                            <button id="sheetTrigger" class="flex items-center justify-between w-full h-8 px-2.5 text-sm rounded-md border transition-colors cursor-pointer" style="border-color: #D0D7DE; background-color: #FFFFFF; color: #1F2328;" onmouseover="this.style.borderColor='#8B949E'" onmouseout="this.style.borderColor='#D0D7DE'">
+                                <span id="sheetSelectedText">Sheet 1</span>
+                                <svg class="ml-2 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="6 9 12 15 18 9"/>
+                                </svg>
+                            </button>
+                            <div id="sheetMenu" class="absolute z-50 top-full mt-1 left-0 right-0 min-w-[140px] overflow-hidden rounded-md border shadow-lg hidden" style="border-color: #D0D7DE; background-color: #FFFFFF;">
+                                <div id="sheetOptions" class="p-0.5"></div>
+                            </div>
+                        </div>
+                        <span id="importStatus" class="text-xs mt-1.5 block text-[#238636]"></span>
+                    </div>
+                </div>
+
+                <hr class="my-4 sm:my-5" style="border-color: #D0D7DE;">
+
+                <h2 class="text-base font-semibold text-[#1F2328] mb-2">Select Columns</h2>
+                <div class="flex flex-col gap-5">
+                    <!-- Keep Columns -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="text-sm font-semibold text-[#1F2328]">Columns to Keep <span class="text-xs font-normal text-[#656D76]">(Select Multiple)</span></h3>
+                            <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
+                                <input type="checkbox" id="chkSelectAllKeep" class="custom-checkbox">
+                                Select All
+                            </label>
+                        </div>
+                        <p class="text-xs text-[#656D76] mb-2">These columns will appear in every output row</p>
+                        <select id="lstColumns" multiple size="8" class="w-full"></select>
+                    </div>
+
+                    <!-- Pivot Columns -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <h3 class="text-sm font-semibold text-[#1F2328]">Columns to Pivot <span class="text-xs font-normal text-[#656D76]">(Select Multiple)</span></h3>
+                            <div class="flex items-center gap-4">
+                                <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
+                                    <input type="checkbox" id="chkIncludeHeader" checked class="custom-checkbox">
+                                    Include Pivot Column Name
+                                </label>
+                                <label class="flex items-center gap-1.5 text-xs text-[#656D76] cursor-pointer">
+                                    <input type="checkbox" id="chkSelectAllPivot" class="custom-checkbox">
+                                    Select All
+                                </label>
+                            </div>
+                        </div>
+                        <p class="text-xs text-[#656D76] mb-2">These columns will be converted to rows</p>
+                        <select id="lstPivot" multiple size="8" class="w-full"></select>
+                    </div>
+                </div>
+
+                <div id="runStatus" class="text-xs text-[#656D76] mt-3"></div>
+
+                <!-- Action Buttons -->
+                <div class="mt-4 flex items-center gap-3">
+                    <button id="btnRun" class="inline-flex items-center justify-center h-8 px-5 rounded-md text-sm font-medium text-white border-none cursor-pointer transition-colors" style="background-color: #238636;" onmouseover="this.style.backgroundColor='#2EA043'" onmouseout="this.style.backgroundColor='#238636'">
+                        Run Conversion & Download
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let inputData = [];
+        let outputData = [];
+        let headers = [];
+        let storedWorkbook = null;
+        let isDragging = false;
+
+        const dropzone = document.getElementById('dropzone');
+        const fileInfoArea = document.getElementById('fileInfoArea');
+        const fileNameEl = document.getElementById('fileName');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); e.stopPropagation(); });
+        dropzone.addEventListener('dragenter', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            isDragging = true;
+            dropzone.classList.add('dropzone-drag-over');
+        });
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            isDragging = false;
+            dropzone.classList.remove('dropzone-drag-over');
+            dropzone.style.backgroundColor = '#F6F8FA';
+        });
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault(); e.stopPropagation();
+            isDragging = false;
+            dropzone.classList.remove('dropzone-drag-over');
+            dropzone.style.backgroundColor = '#F6F8FA';
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        function showFileInfo(fileName) {
+            dropzone.classList.add('hidden');
+            fileInfoArea.classList.remove('hidden');
+            fileNameEl.textContent = fileName;
+        }
+
+        let selectedSheetIdx = 0;
+
+        function populateSheetOptions(options) {
+            const container = document.getElementById('sheetOptions');
+            container.innerHTML = options.map((name, i) =>
+                '<div class="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer sheet-option" data-index="' + i + '" style="color: #1F2328;" onmouseover="this.style.backgroundColor=\'#F3F4F6\'" onmouseout="this.style.backgroundColor=\'transparent\'">' +
+                    '<span class="flex h-3.5 w-3.5 items-center justify-center">' +
+                        (i === selectedSheetIdx
+                            ? '<svg class="h-3.5 w-3.5 text-[#2F81F7]" viewBox="0 0 15 15" fill="currentColor"><path d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58889 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"/></svg>'
+                            : '')
+                    + '</span>' +
+                    '<span>' + name + '</span>' +
+                '</div>'
+            ).join('');
+            document.getElementById('sheetSelectedText').textContent = options[selectedSheetIdx] || options[0];
+        }
+
+        function setSheetIndex(idx) {
+            selectedSheetIdx = idx;
+            if (storedWorkbook) {
+                populateSheetOptions(storedWorkbook.SheetNames);
+                importFromSheet();
+            }
+        }
+
+        const sheetTrigger = document.getElementById('sheetTrigger');
+        const sheetMenu = document.getElementById('sheetMenu');
+
+        sheetTrigger.addEventListener('click', function(e) {
+            e.stopPropagation();
+            sheetMenu.classList.toggle('hidden');
+        });
+
+        document.addEventListener('click', function() {
+            sheetMenu.classList.add('hidden');
+        });
+
+        sheetMenu.addEventListener('click', function(e) {
+            const option = e.target.closest('.sheet-option');
+            if (option) {
+                const idx = parseInt(option.dataset.index);
+                setSheetIndex(idx);
+                sheetMenu.classList.add('hidden');
+            }
+        });
+
+        function resetUpload() {
+            dropzone.classList.remove('hidden');
+            fileInfoArea.classList.add('hidden');
+            fileInput.value = '';
+            storedWorkbook = null;
+            inputData = [];
+            outputData = [];
+            headers = [];
+            selectedSheetIdx = 0;
+            document.getElementById('lstColumns').innerHTML = '';
+            document.getElementById('lstPivot').innerHTML = '';
+            document.getElementById('sheetOptions').innerHTML = '<div class="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer sheet-option" data-index="0" style="color: #1F2328;"><span class="flex h-3.5 w-3.5 items-center justify-center"><svg class="h-3.5 w-3.5 text-[#2F81F7]" viewBox="0 0 15 15" fill="currentColor"><path d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58889 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"/></svg></span><span>Sheet 1</span></div>';
+            document.getElementById('sheetSelectedText').textContent = 'Sheet 1';
+            document.getElementById('importStatus').textContent = '';
+            document.getElementById('importStatus').className = 'text-xs mt-1.5 block text-[#238636]';
+            setRunStatus('');
+        }
+
+        function importFromSheet() {
+            if (!storedWorkbook) return;
+            const idx = selectedSheetIdx;
+            const sheetName = storedWorkbook.SheetNames[idx];
+            const worksheet = storedWorkbook.Sheets[sheetName];
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1, blankrows: false});
+            processData(jsonData);
+            showStatus('importStatus', 'Loaded sheet: ' + sheetName, 'success');
+        }
+
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            showFileInfo(file.name);
+
+            if (file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.txt')) {
+                storedWorkbook = null;
+                selectedSheetIdx = 0;
+                populateSheetOptions([file.name.toLowerCase().endsWith('.txt') ? 'TXT' : 'CSV']);
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    Papa.parse(e.target.result, {
+                        complete: function(results) {
+                            processData(results.data);
+                        },
+                        skipEmptyLines: true
+                    });
+                };
+                reader.readAsText(file);
+            } else {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = new Uint8Array(e.target.result);
+                        storedWorkbook = XLSX.read(data, {type: 'array'});
+                        selectedSheetIdx = 0;
+                        populateSheetOptions(storedWorkbook.SheetNames);
+                        importFromSheet();
+                    } catch (error) {
+                        showStatus('importStatus', 'Error reading file: ' + error.message, 'error');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        document.getElementById('btnRemoveFile').addEventListener('click', resetUpload);
+
+        function processData(data) {
+            if (!data || data.length < 2) {
+                showStatus('importStatus', 'File must contain headers and at least one data row.', 'error');
+                return;
+            }
+
+            headers = (data[0] || []).map(h => (h === undefined || h === null) ? '' : String(h));
+            if (headers.length === 0) {
+                showStatus('importStatus', 'No headers detected in the first row.', 'error');
+                return;
+            }
+
+            inputData = data.map((row) => {
+                const arr = Array.isArray(row) ? row.slice() : [];
+                while (arr.length < headers.length) arr.push('');
+                return arr;
+            });
+
+            const lstColumns = document.getElementById('lstColumns');
+            const lstPivot = document.getElementById('lstPivot');
+
+            lstColumns.innerHTML = '';
+            lstPivot.innerHTML = '';
+
+            headers.forEach((header, index) => {
+                const label = header || '(blank)';
+
+                const optionKeep = document.createElement('option');
+                optionKeep.value = index;
+                optionKeep.textContent = label;
+                lstColumns.appendChild(optionKeep);
+
+                const optionPivot = document.createElement('option');
+                optionPivot.value = index;
+                optionPivot.textContent = label;
+                lstPivot.appendChild(optionPivot);
+            });
+
+            showStatus('importStatus', inputData.length - 1 + ' rows loaded', 'success');
+            setRunStatus('');
+            outputData = [];
+        }
+
+        function setAllSelected(selectEl, selected) {
+            Array.from(selectEl.options).forEach(o => { o.selected = selected; });
+        }
+        document.getElementById('chkSelectAllKeep').addEventListener('change', function() {
+            setAllSelected(document.getElementById('lstColumns'), this.checked);
+        });
+        document.getElementById('chkSelectAllPivot').addEventListener('change', function() {
+            setAllSelected(document.getElementById('lstPivot'), this.checked);
+        });
+
+        document.getElementById('btnRun').addEventListener('click', function() {
+            const lstColumns = document.getElementById('lstColumns');
+            const lstPivot = document.getElementById('lstPivot');
+            const includeHeader = document.getElementById('chkIncludeHeader').checked;
+
+            const keepCols = Array.from(lstColumns.selectedOptions).map(opt => parseInt(opt.value));
+            const pivotCols = Array.from(lstPivot.selectedOptions).map(opt => parseInt(opt.value));
+
+            if (keepCols.length === 0 || pivotCols.length === 0) {
+                alert('Please select at least one KEEP and one PIVOT column.');
+                return;
+            }
+
+            outputData = [];
+
+            const outHeaders = [];
+            keepCols.forEach(colIndex => outHeaders.push(headers[colIndex] || ''));
+            if (includeHeader) outHeaders.push('Pivot Column Name');
+            outHeaders.push('Pivot Value');
+            outputData.push(outHeaders);
+
+            for (let i = 1; i < inputData.length; i++) {
+                const row = inputData[i] || [];
+
+                pivotCols.forEach(pivotCol => {
+                    const pivotValue = row[pivotCol];
+                    if (pivotValue !== undefined && pivotValue !== null && pivotValue !== '') {
+                        const outRow = [];
+                        keepCols.forEach(keepCol => outRow.push(row[keepCol] ?? ''));
+                        if (includeHeader) outRow.push(headers[pivotCol] || '');
+                        outRow.push(pivotValue);
+                        outputData.push(outRow);
+                    }
+                });
+            }
+
+            const generated = Math.max(0, outputData.length - 1);
+            setRunStatus('Conversion completed. ' + generated + ' rows generated and downloaded.');
+
+            if (generated > 0) {
+                downloadExcel();
+            }
+        });
+
+        function downloadExcel() {
+            if (!outputData || outputData.length < 2) return;
+            const ws = XLSX.utils.aoa_to_sheet(outputData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Output Data');
+            XLSX.writeFile(wb, 'output-data.csv');
+        }
+
+        function showStatus(elementId, message, type) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'text-xs mt-1.5 block ' +
+                (type === 'error' ? 'text-[#F85149]' :
+                 type === 'success' ? 'text-[#238636]' : 'text-[#656D76]');
+        }
+
+        function setRunStatus(message) {
+            const el = document.getElementById('runStatus');
+            el.textContent = message;
+        }
+    </script>
+</body>
+</html>
