@@ -59,7 +59,7 @@
             background-color: #F3F4F6;
         }
         @media (max-width: 640px) {
-            .sheet-option { padding: 10px 10px !important; font-size: 15px !important; }
+            .sheet-option { padding: 10px 10px !important; font-size: clamp(14px, 3.8vw, 16px) !important; }
         }
         .custom-checkbox {
             -webkit-appearance: none;
@@ -90,20 +90,35 @@
         }
         code, pre, .font-mono { font-family: 'JetBrains Mono', monospace; }
         pre { font-family: 'JetBrains Mono', monospace; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 600;
+            margin-right: 8px; flex-shrink: 0;
+        }
+        @media (max-width: 640px) {
+            .step-num { width: 20px; height: 20px; font-size: 11px; }
+        }
+        .progress-active { animation: pulse 1.5s ease-in-out infinite; }
         @media (max-width: 640px) {
             .page-card { padding: 16px 16px 20px !important; }
-            .page-header { padding: 14px 16px 12px !important; }
-            .page-header-title { font-size: 17px !important; }
-            .page-header-sub { font-size: 11px !important; line-height: 1.5 !important; }
-            .mobile-btn { min-height: 44px; padding-top: 10px; padding-bottom: 10px; font-size: 15px !important; }
+            .page-header { background: #FFFFFF !important; padding: 22px 16px 20px !important; border-bottom: 1px solid #E8ECF0 !important; }
+            .page-header-title { font-size: clamp(18px, 5vw, 22px) !important; color: #1F2328 !important; }
+            .page-header-sub { display: none !important; }
+            .mobile-btn { min-height: 44px; padding-top: 10px; padding-bottom: 10px; font-size: clamp(14px, 3.8vw, 16px) !important; }
             .mobile-trigger { min-height: 44px; }
             .mobile-remove { padding: 8px !important; }
             .mobile-label { padding: 8px 0; display: flex; align-items: center; }
-            .mobile-select { font-size: 15px !important; border-radius: 10px !important; }
+            .mobile-select { font-size: clamp(14px, 3.8vw, 16px) !important; border-radius: 10px !important; }
             .mobile-dropzone { min-height: 130px; border-radius: 12px !important; border-width: 2px !important; box-shadow: 0 1px 3px rgba(0,0,0,0.04) !important; }
             .mobile-dropzone:active { background-color: #EBF0F7 !important; }
-            .mobile-text { font-size: 14px !important; }
-            .mobile-heading { font-size: 15px !important; }
+            .mobile-file-card { animation: fadeIn 0.25s ease-out; }
+            .mobile-border-edges { border-left: 1px solid #D0D7DE !important; border-right: 1px solid #D0D7DE !important; border-top: none !important; border-bottom: none !important; }
+            .mobile-card-shadow { box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important; }
+            .mobile-text { font-size: clamp(13px, 3.5vw, 15px) !important; }
+            .mobile-heading { font-size: clamp(14px, 3.5vw, 16px) !important; }
             .mobile-btn:active { opacity: 0.85; transform: scale(0.98); }
             .mobile-trigger:active { background-color: #F3F4F6 !important; }
             .mobile-section-gap { gap: 16px !important; }
@@ -111,9 +126,10 @@
             .mobile-gap { gap: 10px !important; }
             .mobile-hr { margin: 16px 0 !important; }
             .mobile-col-section { margin-bottom: 12px !important; }
-            .mobile-status { font-size: 13px !important; }
+            .mobile-col-card { padding: 12px; border-radius: 10px; background: #FAFBFC; border: 1px solid #E8ECF0; }
+            .mobile-status { font-size: clamp(12px, 3.2vw, 14px) !important; }
             .mobile-progress-bar { height: 6px !important; }
-            .mobile-progress-text { font-size: 13px !important; }
+            .mobile-progress-text { font-size: clamp(12px, 3.2vw, 14px) !important; }
             button, select, label { touch-action: manipulation; }
         }
     </style>
@@ -121,7 +137,7 @@
 <body class="min-h-screen">
     <div class="mx-auto px-0 sm:px-4 py-0 sm:py-10" style="max-width: 960px; padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 16px);">
         <div id="tool-content">
-            <div class="md:border" style="background-color: #FFFFFF; border-color: #D0D7DE; box-shadow: 0 1px 3px rgba(0,0,0,0.08);">
+            <div class="border mobile-border-edges" style="background-color: #FFFFFF; border-color: #D0D7DE; box-shadow: 0 1px 3px rgba(0,0,0,0.08); border-radius: 8px;">
                 <div class="page-header" style="background: #0a2540; padding: 18px 24px 14px;">
                     <div class="page-header-title" style="font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.02em; line-height: 1;">Excel Row-to-Column Conversion Tool</div>
                     <div class="page-header-sub" style="font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 8px;">Transform wide-format data into long format by unpivoting selected columns. 100% client-side.</div>
@@ -130,48 +146,30 @@
 
                 <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xlsb" class="hidden">
 
-                <h3 class="text-base font-medium mt-4 mb-1 mobile-heading" style="color: #2F81F7;">Upload Data File <span class="text-sm font-normal text-[#656D76]">(CSV, TXT, XLSX, XLSB)</span></h3>
+                <h3 class="text-base font-medium mt-4 mb-1 mobile-heading" style="color: #2F81F7;">
+                    Upload Data File
+                </h3>
 
                 <!-- Dropzone -->
-                <div id="dropzone" class="flex h-32 sm:h-40 cursor-pointer flex-col items-center justify-center gap-2 sm:gap-3 rounded-md border-2 border-dashed transition-colors mobile-dropzone" style="border-color: #D0D7DE; background-color: #F6F8FA;" onmouseover="this.style.backgroundColor='#EFF1F3'" onmouseout="this.style.backgroundColor='#F6F8FA'">
-                    <div class="rounded-full p-3 mobile-dropzone-icon" style="background-color: #FFFFFF; border: 1px solid #D0D7DE;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                            <polyline points="17 8 12 3 7 8"/>
-                            <line x1="12" y1="3" x2="12" y2="15"/>
-                        </svg>
-                    </div>
+                <div id="dropzone" class="flex h-32 sm:h-40 cursor-pointer flex-col items-center justify-center gap-2 sm:gap-3 rounded-md border-2 border-dashed transition-all duration-200 mobile-dropzone" style="border-color: #D0D7DE; background-color: #F6F8FA;" onmouseover="this.style.backgroundColor='#EFF1F3'; this.style.borderColor='#2F81F7'" onmouseout="this.style.backgroundColor='#F6F8FA'; this.style.borderColor='#D0D7DE'">
                     <div class="text-center">
                         <p class="text-sm font-medium text-[#1F2328] mobile-text">Click to select</p>
-                        <p class="text-xs text-[#656D76] mt-0.5">or drag and drop file here</p>
+                        <p class="text-xs text-[#656D76] mt-0.5">or drag and drop file here (CSV, TXT, XLSX, XLSB)</p>
                     </div>
                 </div>
 
                 <!-- File info -->
-                <div id="fileInfoArea" class="hidden rounded-md mt-3 border mobile-file-card" style="background-color: #F6F8FA; border-color: #D0D7DE;">
+                <div id="fileInfoArea" class="hidden rounded-md mt-3 border mobile-file-card mobile-card-shadow" style="background-color: #F6F8FA; border-color: #D0D7DE;">
                     <div class="flex items-center gap-3 px-3 sm:px-4 py-3">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
-                            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                            <polyline points="14 2 14 8 20 8"/>
-                            <line x1="16" y1="13" x2="8" y2="13"/>
-                            <line x1="16" y1="17" x2="8" y2="17"/>
-                        </svg>
                         <span id="fileName" class="text-sm text-[#1F2328] truncate flex-1"></span>
-                        <button id="btnRemoveFile" class="rounded p-1 hover:bg-[#EFF1F3] transition-colors cursor-pointer mobile-remove" style="border: none; background: transparent;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18"/>
-                                <line x1="6" y1="6" x2="18" y2="18"/>
-                            </svg>
-                        </button>
+                        <button id="btnRemoveFile" class="rounded p-2 hover:bg-[#EFF1F3] transition-colors cursor-pointer mobile-remove text-[#656D76] font-medium" style="border: none; background: transparent;">✕</button>
                     </div>
                     <div class="px-3 sm:px-4 py-2.5" style="border-top: 1px solid #D0D7DE;">
                         <span class="text-xs font-medium text-[#656D76]">Sheet</span>
                         <div class="relative mt-1" id="sheetDropdown">
                             <button id="sheetTrigger" class="flex items-center justify-between w-full h-8 px-2.5 text-sm rounded-md border transition-colors cursor-pointer mobile-trigger" style="border-color: #D0D7DE; background-color: #FFFFFF; color: #1F2328;" onmouseover="this.style.borderColor='#8B949E'" onmouseout="this.style.borderColor='#D0D7DE'">
                                 <span id="sheetSelectedText">Sheet 1</span>
-                                <svg class="ml-2 shrink-0" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#656D76" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="6 9 12 15 18 9"/>
-                                </svg>
+                                <span class="ml-2 text-[10px] text-[#656D76]">▾</span>
                             </button>
                             <div id="sheetMenu" class="absolute z-50 top-full mt-1 left-0 right-0 min-w-[140px] overflow-hidden rounded-md border shadow-lg hidden" style="border-color: #D0D7DE; background-color: #FFFFFF;">
                                 <div id="sheetOptions" class="p-0.5"></div>
@@ -180,7 +178,7 @@
                         <span id="importStatus" class="text-xs mt-1.5 block text-[#238636] mobile-status"></span>
                         <div id="importProgress" class="hidden mt-2">
                             <div class="w-full h-1.5 rounded-full bg-[#E8ECF0] overflow-hidden mobile-progress-bar">
-                                <div id="importProgressBar" class="h-full rounded-full transition-all duration-300 ease-out" style="width: 0%; background-color: #2F81F7;"></div>
+                                <div id="importProgressBar" class="h-full rounded-full transition-all duration-300 ease-out progress-active" style="width: 0%; background-color: #2F81F7;"></div>
                             </div>
                             <span id="importProgressText" class="text-xs text-[#656D76] mt-1 block mobile-progress-text">0%</span>
                         </div>
@@ -192,7 +190,7 @@
                 <h2 class="text-base font-semibold mb-2 mobile-heading" style="color: #2F81F7;">Select Columns</h2>
                 <div class="flex flex-col md:grid md:grid-cols-2 gap-5 mobile-section-gap">
                     <!-- Keep Columns -->
-                    <div>
+                    <div class="mobile-col-card">
                         <div class="mb-1">
                             <h3 class="text-sm font-semibold text-[#1F2328] mobile-heading">Columns to Keep</h3>
                         </div>
@@ -207,7 +205,7 @@
                     </div>
 
                     <!-- Pivot Columns -->
-                    <div>
+                    <div class="mobile-col-card">
                         <div class="mb-1">
                             <h3 class="text-sm font-semibold text-[#1F2328] mobile-heading">Columns to Pivot</h3>
                         </div>
@@ -230,7 +228,7 @@
 
                 <!-- Action Buttons -->
                 <div class="mt-4 flex items-center gap-3">
-                    <button id="btnRun" class="inline-flex items-center justify-center h-9 sm:h-8 w-full sm:w-auto px-5 rounded-md text-sm font-medium text-white border-none cursor-pointer transition-colors mobile-btn" style="background-color: #238636;" onmouseover="this.style.backgroundColor='#2EA043'" onmouseout="this.style.backgroundColor='#238636'">
+                    <button id="btnRun" class="inline-flex items-center justify-center h-9 sm:h-8 w-full sm:w-auto px-5 rounded-md text-sm font-medium text-white border-none cursor-pointer transition-all duration-200 mobile-btn" style="background-color: #238636;" onmouseover="this.style.backgroundColor='#2EA043'" onmouseout="this.style.backgroundColor='#238636'">
                         Run Conversion & Download
                     </button>
                 </div>
@@ -287,10 +285,8 @@
             const container = document.getElementById('sheetOptions');
             container.innerHTML = options.map((name, i) =>
                 '<div class="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer sheet-option" data-index="' + i + '" style="color: #1F2328;" onmouseover="this.style.backgroundColor=\'#F3F4F6\'" onmouseout="this.style.backgroundColor=\'transparent\'">' +
-                    '<span class="flex h-3.5 w-3.5 items-center justify-center">' +
-                        (i === selectedSheetIdx
-                            ? '<svg class="h-3.5 w-3.5 text-[#2F81F7]" viewBox="0 0 15 15" fill="currentColor"><path d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58889 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"/></svg>'
-                            : '')
+                    '<span class="flex h-3.5 w-3.5 items-center justify-center text-[11px] text-[#2F81F7]">' +
+                        (i === selectedSheetIdx ? '✓' : '') +
                     + '</span>' +
                     '<span>' + name + '</span>' +
                 '</div>'
@@ -338,7 +334,7 @@
             selectedSheetIdx = 0;
             document.getElementById('lstColumns').innerHTML = '';
             document.getElementById('lstPivot').innerHTML = '';
-            document.getElementById('sheetOptions').innerHTML = '<div class="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer sheet-option" data-index="0" style="color: #1F2328;"><span class="flex h-3.5 w-3.5 items-center justify-center"><svg class="h-3.5 w-3.5 text-[#2F81F7]" viewBox="0 0 15 15" fill="currentColor"><path d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58889 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"/></svg></span><span>Sheet 1</span></div>';
+            document.getElementById('sheetOptions').innerHTML = '<div class="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer sheet-option" data-index="0" style="color: #1F2328;"><span class="flex h-3.5 w-3.5 items-center justify-center text-[11px] text-[#2F81F7]">✓</span><span>Sheet 1</span></div>';
             document.getElementById('sheetSelectedText').textContent = 'Sheet 1';
             document.getElementById('importStatus').textContent = '';
             document.getElementById('importStatus').className = 'text-xs mt-1.5 block text-[#238636]';
