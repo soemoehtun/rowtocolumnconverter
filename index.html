@@ -174,15 +174,15 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
     .transformation-showcase { flex-direction: row; gap: 4px; align-items: flex-start; justify-content: space-between; }
     .transformation-arrow { transform: none; margin-top: 30px; width: 20px; height: 20px; font-size: 14px; }
     .transformation-table-wrapper h4 { font-size: 10px; margin-bottom: 6px; }
-    .example-table { font-size: 9px; }
+    .example-table { font-size: 8px; }
     .example-table th, .example-table td { padding: 4px 4px; }
     .form-row.two-col { grid-template-columns: 1fr; }
-    .checklist-box { height: 110px; }
+    .checklist-box { height: 70px; }
     .example-grid { grid-template-columns: 1fr !important; }
     .guide-card { display: none; }
     .guide-card.guide-visible { display: flex; }
-    .btn-row { flex-direction: column; }
-    .btn-row .btn-secondary, .btn-row .btn-success { width: 100%; }
+    .btn-row { flex-direction: row; }
+    .btn-row .btn-secondary, .btn-row .btn-success { flex: 1; }
 }
 </style>
 </head>
@@ -281,7 +281,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
 
         <div class="btn-row">
           <button class="btn-secondary" onclick="reset()">Clear All</button>
-          <button class="btn-success" id="btnRun" onclick="runConversion()">Run Conversion &amp; Download</button>
+          <button class="btn-success" id="btnRun" onclick="runConversion()">Run Conversion</button>
         </div>
 
         <div class="progress-container" id="convertProgress" style="display:none;">
@@ -302,7 +302,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
         </div>
         <div class="guide-step">
           <span class="step-num">3</span>
-          <div class="step-body"><strong>Run conversion.</strong> Click <strong>Run Conversion &amp; Download</strong> to unpivot your data.</div>
+          <div class="step-body"><strong>Run conversion.</strong> Click <strong>Run Conversion</strong> to unpivot your data.</div>
         </div>
         <div class="guide-step">
           <span class="step-num">4</span>
