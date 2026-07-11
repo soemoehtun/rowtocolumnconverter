@@ -1,339 +1,533 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel Row-to-Column Conversion Tool</title>
-    <meta property="og:title" content="Excel Row-to-Column Conversion Tool">
-    <meta property="og:description" content="Transform wide-format data into long format by unpivoting selected columns. 100% client-side.">
-    <meta property="og:image" content="https://soemoehtun.github.io/Excel-Row-To-Column-Converter/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:type" content="website">
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:image" content="https://soemoehtun.github.io/Excel-Row-To-Column-Converter/og-image.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <style>
-        :root {
-            --blue: #2F81F7;
-            --green: #238636;
-            --green-hover: #2EA043;
-            --dark: #1F2328;
-            --gray: #656D76;
-            --border: #D0D7DE;
-            --bg: #F6F8FA;
-            --hover: #F3F4F6;
-            --navy: #0a2540;
-        }
-        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: linear-gradient(145deg, #eef0f4, #e4e6eb); margin: 0; }
-        pre, code { font-family: 'JetBrains Mono', monospace; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a2540">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Excel Row-to-Column Conversion Tool</title>
+<meta property="og:title" content="Excel Row-to-Column Conversion Tool">
+<meta property="og:description" content="Transform wide-format data into long format by unpivoting selected columns. 100% client-side.">
+<meta property="og:image" content="https://soemoehtun.github.io/Excel-Row-To-Column-Converter/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://soemoehtun.github.io/Excel-Row-To-Column-Converter/og-image.png">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+html, body { overflow-x: hidden; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background: linear-gradient(145deg, #eef0f4 0%, #e4e6eb 100%);
+    min-height: 100vh; color: #333; font-size: 13px;
+}
+.page-container { max-width: 700px; margin: 0 auto; padding: 40px 24px 48px; }
+.page-header-bar { padding: 20px 24px 14px; background: #0a2540; }
+.page-title { font-size: 20px; font-weight: 700; color: #fff; letter-spacing: -0.2px; }
+.page-wrap { background: #fff; border-radius: 12px; overflow: hidden; }
+.tab-bar { display: flex; background: #0a2540; overflow-x: auto; padding: 0 16px; }
+.tab-btn { padding: 11px 20px; border: none; background: transparent; color: #fff; font-size: 13px; font-family: inherit; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap; flex-shrink: 0; }
+.tab-btn:hover, .tab-btn.active { color: #fff; }
+.tab-btn.active { border-bottom-color: #fff; font-weight: 600; }
+.tool-card {
+    background: #fff; border-radius: 10px;
+    padding: 24px 28px 28px; display: flex; flex-direction: column;
+}
+.card-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px; padding-bottom: 6px;
+}
+.card-header-text .card-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.card-header-text .card-subtitle { font-size: 11px; color: #6b7280; margin-top: 2px; }
+.form-row { display: grid; grid-template-columns: 1fr; gap: 14px; margin-bottom: 14px; align-items: end; }
+.form-row.two-col { grid-template-columns: 1fr 1fr; }
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-group label { font-size: 12px; color: #555; font-weight: 500; }
+.form-group label.hint-text { font-size: 11px; color: #6b7280; font-weight: 400; }
+.form-group label.chk-label { font-size: 12px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: pointer; }
+.form-group label .req { color: #c2002f; margin-left: 2px; }
+select, input[type="number"] {
+    height: 34px; border: 1px solid #d0d0d0; border-radius: 5px;
+    padding: 0 10px; font-size: 13px; font-family: inherit; color: #333;
+    background: #fff; outline: none; width: 100%;
+}
+select:focus, input:focus { border-color: #0083c1; box-shadow: 0 0 0 3px rgba(0,131,193,0.1); }
+select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-allowed; }
+.btn-row { display: flex; justify-content: flex-end; margin-top: 10px; gap: 10px; }
+.btn-primary {
+    background: linear-gradient(135deg, #0083c1, #006fa8); color: #fff; border: none;
+    border-radius: 5px; padding: 0 28px; height: 34px; font-size: 13px;
+    font-family: inherit; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,131,193,0.25);
+}
+.btn-primary:hover { background: linear-gradient(135deg, #006fa8, #005a8c); }
+.btn-primary:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; }
+.btn-secondary {
+    background: transparent; color: #666; border: 1px solid #d0d0d0;
+    border-radius: 5px; padding: 0 18px; height: 34px; font-size: 13px;
+    font-family: inherit; cursor: pointer;
+}
+.btn-secondary:hover { background: #f5f5f5; border-color: #bbb; }
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #059669); color: #fff; border: none;
+    border-radius: 5px; padding: 0 28px; height: 34px; font-size: 13px;
+    font-family: inherit; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(16,185,129,0.25);
+}
+.btn-success:hover { background: linear-gradient(135deg, #059669, #047857); }
+.btn-success:disabled { background: linear-gradient(135deg, #10b981, #059669); box-shadow: none; cursor: not-allowed; }
+.drag-drop-zone {
+    border: 2px dashed #d0d0d0; border-radius: 8px;
+    padding: 20px; text-align: center; cursor: pointer; margin: 0 0 14px;
+}
+.drag-drop-zone:hover, .drag-drop-zone.drag-over { border-color: #0083c1; background: rgba(0,131,193,0.03); }
+.drag-drop-zone .drop-icon { font-size: 24px; margin-bottom: 6px; color: #6b7280; }
+.drag-drop-zone .drop-text { font-size: 13px; color: #555; }
+.drag-drop-zone .drop-hint { font-size: 11px; color: #6b7280; }
+.drag-drop-zone .drop-hint span { color: #0083c1; font-weight: 600; cursor: pointer; }
+.drag-drop-zone .drop-types { font-size: 10px; color: #999; }
+.file-card {
+    border: 1px solid #e6e8eb; border-radius: 6px; overflow: hidden; margin: 0 0 14px;
+}
+.file-card .file-body { padding: 10px 12px; }
+.file-card .file-name { font-weight: 500; font-size: 12px; color: #333; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.file-card .file-remove { color: #c2002f; cursor: pointer; font-size: 11px; }
+.file-card .file-remove:hover { text-decoration: underline; }
+.file-card .file-info { display: flex; align-items: center; gap: 8px; }
+.sheet-opt { display: flex; align-items: center; gap: 8px; }
+.progress-container { margin: 14px 0; display: none; }
+.progress-bar { height: 6px; background: #e6e8eb; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: linear-gradient(90deg, #0083c1, #10b981); width: 0%; border-radius: 3px; }
+.progress-text { font-size: 11px; color: #6b7280; margin-top: 6px; text-align: center; }
+.guide-card {
+    background: #fff; border-radius: 10px;
+    padding: 24px 28px 28px; display: none; flex-direction: column;
+}
+.guide-section-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin: 14px 0 14px; }
+.guide-divider { border: none; border-top: 1px solid #e6e8eb; margin: 16px 0; }
+.guide-step { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 10px; }
+.guide-step .step-num {
+    flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, #0083c1, #005d8f); color: #fff;
+    font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.guide-step .step-body { font-size: 12px; color: #444; line-height: 1.65; }
+.guide-step .step-body strong { color: #1a1a2e; }
+.guide-formula {
+    background: #f4f6f8; border: 1px solid #e0e4e8; border-radius: 6px;
+    padding: 9px 12px; font-family: 'Courier New', monospace;
+    font-size: 11.5px; color: #1a1a2e; margin: 6px 0 4px; line-height: 1.8;
+}
+.transformation-showcase {
+    display: flex; gap: 16px; align-items: center; justify-content: space-between;
+    margin-top: 10px; background: #fff; border: 1px solid #e6e8eb; border-radius: 8px; padding: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.transformation-arrow {
+    flex-shrink: 0; color: #0083c1; font-size: 20px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(0,131,193,0.1); width: 36px; height: 36px; border-radius: 50%;
+}
+.transformation-table-wrapper {
+    flex: 1; overflow-x: auto;
+}
+.transformation-table-wrapper h4 {
+    font-size: 12px; color: #1a1a2e; margin-bottom: 10px; font-weight: 700; text-align: center;
+}
+.table-container {
+    border: 1px solid #e6e8eb; border-radius: 6px; overflow: hidden;
+}
+.example-table {
+    width: 100%; border-collapse: collapse; font-family: inherit; font-size: 11px; text-align: left;
+}
+.example-table th, .example-table td {
+    padding: 7px 10px; border-bottom: 1px solid #e6e8eb; white-space: nowrap;
+}
+.example-table tr:last-child th, .example-table tr:last-child td { border-bottom: none; }
+.example-table th { background: #f8fafc; font-weight: 600; color: #475569; }
+.example-table td { color: #334155; }
+.example-table .hl-keep { background-color: rgba(16, 185, 129, 0.08) !important; color: #059669 !important; font-weight: 500; }
+.example-table .hl-pivot { background-color: rgba(0, 131, 193, 0.08) !important; color: #006fa8 !important; font-weight: 500; }
 
-        /* Select */
-        #lstColumns, #lstPivot { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 4px; background: #fff; font-size: 13px; color: var(--dark); outline: none; }
-        #lstColumns option, #lstPivot option { padding: 6px 10px; border-radius: 4px; margin: 1px 0; }
-        #lstColumns option:hover, #lstPivot option:hover { background: var(--hover); }
-        #lstColumns option:checked, #lstPivot option:checked { background: var(--blue) !important; color: #fff !important; font-weight: 500; }
-        #lstColumns option:checked:hover, #lstPivot option:checked:hover { background: #388BFD !important; }
-
-        /* Checkbox */
-        .cb { -webkit-appearance: none; appearance: none; width: 16px; height: 16px; border: 1px solid var(--border); border-radius: 3px; background: #fff; cursor: pointer; flex-shrink: 0; position: relative; }
-        .cb:checked { background: var(--blue); border-color: var(--blue); }
-        .cb:checked::after { content: ''; position: absolute; left: 4px; top: 1px; width: 6px; height: 10px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
-
-        /* Animations */
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .6; } }
-        .fade-in { animation: fadeIn .3s ease-out; }
-        .pulse { animation: pulse 1.5s ease-in-out infinite; }
-
-        /* Sheet option */
-        .sheet-opt:hover { background: var(--hover); }
-
-        /* Desktop */
-        @media (min-width: 641px) {
-            .card-wrap { border-radius: 8px; border-left: 1px solid #C9CDD4; border-right: 1px solid #C9CDD4; }
-            #lstColumns, #lstPivot { min-height: 260px; }
-        }
-
-        /* Mobile */
-        @media (max-width: 640px) {
-            .hdr { background: var(--navy); padding: 16px 16px 18px; border-bottom: 1px solid #E8ECF0; }
-            .hdr h1 { font-size: clamp(10px, 4vw, 20px); color: #fff; margin: 0; font-weight: 700; line-height: 1; letter-spacing: -.02em; white-space: nowrap; text-align: left; overflow: hidden; text-overflow: ellipsis; }
-            .hdr-sub { display: none; }
-            .card-body { padding: 16px 16px 20px !important; }
-            .col-card { padding: 12px; border-radius: 10px; background: #FAFBFC; border: 1px solid #E8ECF0; }
-            .dropzone { min-height: 130px; border-radius: 12px; border-width: 2px; box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: all .2s; }
-            .dropzone:active { background: #EBF0F7 !important; }
-            .file-card { animation: fadeIn .25s ease-out; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-            .btn { min-height: 44px; padding: 10px; font-size: clamp(14px, 3.8vw, 16px) !important; }
-            .btn:active { opacity: .85; transform: scale(.98); }
-            .btn:disabled { opacity: .6; cursor: not-allowed; }
-            .trigger { min-height: 44px; }
-            .trigger:active { background: var(--hover) !important; }
-            .rm-btn { padding: 8px !important; }
-            .lbl { padding: 8px 0; display: flex; align-items: center; }
-            .sel { font-size: clamp(14px, 3.8vw, 16px) !important; border-radius: 10px !important; }
-            .txt { font-size: clamp(13px, 3.5vw, 15px) !important; }
-            .hdg { font-size: clamp(14px, 3.5vw, 16px) !important; }
-            .status { font-size: clamp(12px, 3.2vw, 14px) !important; }
-            .prog-bar { height: 6px !important; }
-            .gap-sm { gap: 10px !important; }
-            .gap-md { gap: 16px !important; }
-            .hr { margin: 16px 0 !important; }
-            .sheet-opt { padding: 10px !important; font-size: clamp(14px, 3.8vw, 16px) !important; }
-            button, select, label { touch-action: manipulation; }
-        }
-    </style>
+@media (max-width: 600px) {
+    body { padding: 0; margin: 0; width: 100vw; overflow-x: hidden; background: #fff; }
+    .page-container { padding: 0; margin: 0; width: 100%; max-width: 100vw; }
+    .page-wrap { border: none; border-radius: 0; width: 100%; }
+    .page-header-bar { padding: 12px 16px 10px; background: #0a2540; margin: 0; }
+    .tab-bar { background: #0a2540; border-bottom: none; padding: 0 4px; }
+    .tab-btn { padding: 10px 13px; font-size: 12px; }
+    .page-title { font-size: 20px; font-weight: 900; }
+    .tool-card, .guide-card { padding: 16px; border-radius: 0; }
+    .transformation-showcase { flex-direction: column; gap: 12px; padding: 12px; }
+    .transformation-arrow { transform: rotate(90deg); margin: 4px 0; }
+    .card-subtitle { display: none; }
+    .form-row.two-col { grid-template-columns: 1fr; }
+    .example-grid { grid-template-columns: 1fr !important; }
+    .guide-card { display: none; }
+    .guide-card.guide-visible { display: flex; }
+    .btn-row .btn-secondary, .btn-row .btn-success { flex: 1; }
+}
+</style>
 </head>
-<body class="min-h-screen">
-    <div class="mx-auto px-0 sm:px-4 py-0 sm:py-10" style="max-width:960px; padding-bottom:calc(env(safe-area-inset-bottom,0px)+16px)">
-        <div id="tool">
-            <div class="border card-wrap" style="background:#fff; border-color:#C9CDD4; border-left:none; border-right:none; box-shadow:0 1px 3px rgba(0,0,0,.08)">
-                <div class="hdr" style="background:var(--navy); padding:18px 24px 14px">
-                    <h1 style="font-size:20px; color:#fff; margin:0; font-weight:700; letter-spacing:-.02em; line-height:1">Row-to-Column Conversion Tool</h1>
-                    <div class="hdr-sub" style="font-size:12px; color:rgba(255,255,255,.75); margin-top:8px">Transform wide-format data into long format by unpivoting selected columns. 100% client-side.</div>
-                </div>
-                <div class="card-body" style="padding:24px 28px 28px">
+<body>
 
-                <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xlsb" class="hidden">
-                <h3 class="hdg text-base font-medium mt-4 mb-1" style="color:var(--blue)">Upload Data File</h3>
+<div class="page-container">
+  <div class="page-wrap">
 
-                <!-- Dropzone -->
-                <div id="dropzone" class="flex h-32 sm:h-40 cursor-pointer flex-col items-center justify-center gap-2 sm:gap-3 rounded-md border-2 border-dashed dropzone" style="border-color:var(--border); background:var(--bg)" onmouseover="this.style.background='#EFF1F3'; this.style.borderColor='var(--blue)'" onmouseout="this.style.background='var(--bg)'; this.style.borderColor='var(--border)'">
-                    <div class="text-center">
-                        <p class="txt text-sm font-medium" style="color:var(--dark)">Click to select</p>
-                        <p class="text-xs mt-0.5" style="color:var(--gray)">or drag and drop file here (CSV, TXT, XLSX, XLSB)</p>
-                    </div>
-                </div>
+    <div style="background: #0a2540;">
+      <div class="page-header-bar">
+        <div class="page-title">Row-to-Column Conversion Tool</div>
+      </div>
 
-                <!-- File info -->
-                <div id="fileInfoArea" class="hidden rounded-md mt-3 border file-card" style="background:var(--bg); border-color:var(--border)">
-                    <div class="flex items-center gap-3 px-3 sm:px-4 py-3">
-                        <span id="fileName" class="text-sm truncate flex-1" style="color:var(--dark)"></span>
-                        <button id="btnRemoveFile" class="rounded rm-btn hover:bg-[#EFF1F3] transition-colors cursor-pointer font-medium" style="border:none; background:transparent; color:var(--gray)">✕</button>
-                    </div>
-                    <div class="px-3 sm:px-4 py-2.5" style="border-top:1px solid var(--border)">
-                        <span class="text-xs font-medium" style="color:var(--gray)">Sheet</span>
-                        <div class="relative mt-1" id="sheetDropdown">
-                            <button id="sheetTrigger" class="flex items-center justify-between w-full h-8 px-2.5 text-sm rounded-md border transition-colors cursor-pointer trigger" style="border-color:var(--border); background:#fff; color:var(--dark)" onmouseover="this.style.borderColor='#8B949E'" onmouseout="this.style.borderColor='var(--border)'">
-                                <span id="sheetSelectedText">Sheet 1</span>
-                                <span class="ml-2 text-[10px]" style="color:var(--gray)">▾</span>
-                            </button>
-                            <div id="sheetMenu" class="absolute z-50 top-full mt-1 left-0 right-0 min-w-[140px] overflow-hidden rounded-md border shadow-lg hidden" style="border-color:var(--border); background:#fff">
-                                <div id="sheetOptions" class="p-0.5"></div>
-                            </div>
-                        </div>
-                        <span id="importStatus" class="text-xs mt-1.5 block status" style="color:var(--green)"></span>
-                        <div id="importProgress" class="hidden mt-2">
-                            <div class="w-full h-1.5 rounded-full overflow-hidden prog-bar" style="background:#E8ECF0">
-                                <div id="importProgressBar" class="h-full rounded-full transition-all duration-300 pulse" style="width:0; background:var(--blue)"></div>
-                            </div>
-                            <span id="importProgressText" class="text-xs mt-1 block status" style="color:var(--gray)">0%</span>
-                        </div>
-                    </div>
-                </div>
-
-                <hr class="my-5 hr" style="border-color:var(--border)">
-                <h2 class="hdg text-base font-semibold mb-2" style="color:var(--blue)">Select Columns</h2>
-                <div class="flex flex-col md:grid md:grid-cols-2 gap-5 gap-md">
-                    <!-- Keep -->
-                    <div class="col-card">
-                        <h3 class="hdg text-sm font-semibold mb-1" style="color:var(--dark)">Columns to Keep</h3>
-                        <p class="txt text-xs mb-2" style="color:var(--gray)">These columns will appear in every output row</p>
-                        <label class="flex items-center gap-1.5 text-xs mb-2 cursor-pointer lbl" style="color:var(--gray)">
-                            <input type="checkbox" id="chkSelectAllKeep" class="cb"> Select All
-                        </label>
-                        <select id="lstColumns" multiple size="6" class="w-full sel"></select>
-                    </div>
-                    <!-- Pivot -->
-                    <div class="col-card">
-                        <h3 class="hdg text-sm font-semibold mb-1" style="color:var(--dark)">Columns to Pivot</h3>
-                        <p class="txt text-xs mb-2" style="color:var(--gray)">These columns will be converted to rows</p>
-                        <div class="flex items-center gap-3 mb-2 gap-sm">
-                            <label class="flex items-center gap-1.5 text-xs cursor-pointer lbl" style="color:var(--gray)">
-                                <input type="checkbox" id="chkIncludeHeader" checked class="cb"> Include Pivot Column Name
-                            </label>
-                            <label class="flex items-center gap-1.5 text-xs cursor-pointer lbl" style="color:var(--gray)">
-                                <input type="checkbox" id="chkSelectAllPivot" class="cb"> Select All
-                            </label>
-                        </div>
-                        <select id="lstPivot" multiple size="6" class="w-full sel"></select>
-                    </div>
-                </div>
-
-                <div id="runStatus" class="text-xs mt-3 status" style="color:var(--gray)"></div>
-                <div class="mt-4 flex items-center gap-3">
-                    <button id="btnRun" class="inline-flex items-center justify-center h-9 sm:h-8 w-full sm:w-auto px-5 rounded-md text-sm font-medium text-white border-none cursor-pointer transition-all btn" style="background:var(--green)" onmouseover="this.style.background='var(--green-hover)'" onmouseout="this.style.background='var(--green)'">
-                        Run Conversion & Download
-                    </button>
-                </div>
-                <div id="convertProgress" class="hidden mt-3">
-                    <div class="w-full h-1.5 rounded-full overflow-hidden prog-bar" style="background:#E8ECF0">
-                        <div id="convertProgressBar" class="h-full rounded-full transition-all duration-300 pulse" style="width:0; background:var(--green)"></div>
-                    </div>
-                    <span id="convertProgressText" class="text-xs mt-1 block status" style="color:var(--gray)"></span>
-                </div>
-            </div>
-        </div>
+      <div class="tab-bar">
+        <button class="tab-btn active" id="tab-tool" onclick="showTab('tool')">Conversion Tool</button>
+        <button class="tab-btn" id="tab-guide" onclick="showTab('guide')">User Guide</button>
+      </div>
     </div>
 
-    <script>
-        let inputData = [], outputData = [], headers = [], storedWorkbook = null;
-        const dropzone = $('dropzone'), fileArea = $('fileInfoArea'), fileEl = $('fileName'), fileIn = $('fileInput');
-        const sheetTrigger = $('sheetTrigger'), sheetMenu = $('sheetMenu'), sheetOpts = $('sheetOptions');
-        let sheetIdx = 0;
+    <div class="main-panel">
 
-        function $(id) { return document.getElementById(id); }
+      <div class="tool-card" id="cardTool">
+        <div class="card-header">
+          <div class="card-header-text">
+            <div class="card-title">Upload &amp; Convert</div>
+            <div class="card-subtitle">Transform wide-format data into long format. 100% client-side.</div>
+          </div>
+        </div>
 
-        // Dropzone events
-        dropzone.addEventListener('click', () => fileIn.click());
-        ['dragover','dragenter'].forEach(e => dropzone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); }));
-        dropzone.addEventListener('dragenter', () => dropzone.classList.add('dropzone-drag-over'));
-        dropzone.addEventListener('dragleave', () => { dropzone.classList.remove('dropzone-drag-over'); dropzone.style.background = ''; });
-        dropzone.addEventListener('drop', e => {
-            e.preventDefault(); e.stopPropagation();
-            dropzone.classList.remove('dropzone-drag-over'); dropzone.style.background = '';
-            if (e.dataTransfer.files.length) { fileIn.files = e.dataTransfer.files; fileIn.dispatchEvent(new Event('change')); }
-        });
+        <input type="file" id="fileInput" accept=".csv,.txt,.xlsx,.xlsb" style="display:none">
 
-        function showFile(name) { dropzone.classList.add('hidden'); fileArea.classList.remove('hidden'); fileEl.textContent = name; }
+        <div class="drag-drop-zone" id="dropzone" onclick="document.getElementById('fileInput').click()">
+          <div class="drop-icon">📁</div>
+          <div class="drop-text">Drag & drop your data file here</div>
+          <div class="drop-hint">or <span>browse files</span> <span class="drop-types">(.csv, .txt, .xlsx, .xlsb)</span></div>
+        </div>
 
-        // Sheet menu
-        function renderSheetOpts(opts) {
-            sheetOpts.innerHTML = opts.map((n, i) =>
-                `<div class="flex items-center gap-2 px-2 py-1.5 text-sm rounded cursor-pointer sheet-opt" data-index="${i}" style="color:var(--dark)">
-                    <span class="text-[11px]" style="color:var(--blue)">${i === sheetIdx ? '✓' : ''}</span>
-                    <span>${n}</span>
-                </div>`
-            ).join('');
-            $('sheetSelectedText').textContent = opts[sheetIdx] || opts[0];
+        <div class="file-card" id="fileInfoArea" style="display:none;">
+          <div class="file-body">
+            <div class="file-info">
+              <span class="file-name" id="fileName" style="flex:1"></span>
+              <span class="file-remove" id="btnRemoveFile">Remove</span>
+            </div>
+            <div style="margin-top:6px;padding-top:6px;border-top:1px solid #f0f2f5;">
+              <div style="font-size:11px;color:#6b7280;font-weight:600;">Sheet</div>
+              <div style="position:relative;margin-top:4px;" id="sheetDropdown">
+                <select id="sheetSelect" style="height:30px;font-size:12px;" onchange="selectSheet(this.selectedIndex)">
+                  <option>Sheet 1</option>
+                </select>
+              </div>
+              <div style="margin-top:4px;display:flex;align-items:center;gap:6px;">
+                <span id="importStatus" style="font-size:11px;font-weight:600;color:#10b981;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="progress-container" id="importProgress" style="display:none;">
+          <div class="progress-bar"><div class="progress-fill" id="importProgressBar"></div></div>
+          <div class="progress-text" id="importProgressText">0%</div>
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e6e8eb;margin:14px 0;">
+
+        <div class="guide-section-title">Select Columns</div>
+        <div class="form-row two-col">
+          <div class="form-group">
+            <label>Columns to Keep</label>
+            <label class="hint-text">These columns appear in every output row</label>
+            <label class="chk-label">
+              <input type="checkbox" id="chkSelectAllKeep" style="width:14px;height:14px;accent-color:#0083c1;"> Select All
+            </label>
+            <select id="lstColumns" multiple size="6" style="height:auto;min-height:100px;"></select>
+          </div>
+          <div class="form-group">
+            <label>Columns to Pivot</label>
+            <label class="hint-text">These columns are converted to rows</label>
+            <div style="display:flex;gap:10px;">
+              <label class="chk-label">
+                <input type="checkbox" id="chkIncludeHeader" checked style="width:14px;height:14px;accent-color:#0083c1;"> Include Pivot Column Name
+              </label>
+              <label class="chk-label">
+                <input type="checkbox" id="chkSelectAllPivot" style="width:14px;height:14px;accent-color:#0083c1;"> Select All
+              </label>
+            </div>
+            <select id="lstPivot" multiple size="6" style="height:auto;min-height:100px;"></select>
+          </div>
+        </div>
+
+        <div id="runStatus" style="font-size:11px;color:#6b7280;margin-top:4px;"></div>
+
+        <div class="btn-row">
+          <button class="btn-success" id="btnRun" onclick="runConversion()">Run Conversion &amp; Download</button>
+        </div>
+
+        <div class="progress-container" id="convertProgress" style="display:none;">
+          <div class="progress-bar"><div class="progress-fill" id="convertProgressBar"></div></div>
+          <div class="progress-text" id="convertProgressText">Converting...</div>
+        </div>
+      </div>
+
+      <div class="guide-card" id="cardGuide">
+        <div class="guide-section-title">How to use</div>
+        <div class="guide-step">
+          <span class="step-num">1</span>
+          <div class="step-body"><strong>Upload your file.</strong> Drag and drop a CSV or Excel file or click <strong>browse files</strong> to select one.</div>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">2</span>
+          <div class="step-body"><strong>Select columns.</strong> Choose which columns to <strong>keep</strong> (appear in every output row) and which to <strong>pivot</strong> (convert to rows).</div>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">3</span>
+          <div class="step-body"><strong>Run conversion.</strong> Click <strong>Run Conversion &amp; Download</strong> to unpivot your data.</div>
+        </div>
+        <div class="guide-step">
+          <span class="step-num">4</span>
+          <div class="step-body"><strong>Download result.</strong> The converted file is automatically downloaded as <strong>output-data.csv</strong>.</div>
+        </div>
+
+        <hr class="guide-divider">
+
+        <div class="guide-section-title" style="margin-bottom: 8px;">Example Transformation</div>
+        <div class="transformation-showcase">
+          <div class="transformation-table-wrapper">
+            <h4>Input (Wide Format)</h4>
+            <div class="table-container">
+              <table class="example-table">
+                <thead>
+                  <tr>
+                    <th class="hl-keep">Site</th><th class="hl-keep">Date</th>
+                    <th class="hl-pivot">KPI1</th><th class="hl-pivot">KPI2</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="hl-keep">A</td><td class="hl-keep">2025-01-01</td><td class="hl-pivot">10</td><td class="hl-pivot">20</td></tr>
+                  <tr><td class="hl-keep">A</td><td class="hl-keep">2025-01-02</td><td class="hl-pivot">15</td><td class="hl-pivot">25</td></tr>
+                  <tr><td class="hl-keep">B</td><td class="hl-keep">2025-01-01</td><td class="hl-pivot">5</td><td class="hl-pivot">8</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="transformation-arrow">➔</div>
+          
+          <div class="transformation-table-wrapper">
+            <h4>Output (Long Format)</h4>
+            <div class="table-container">
+              <table class="example-table">
+                <thead>
+                  <tr>
+                    <th class="hl-keep">Site</th><th class="hl-keep">Date</th>
+                    <th class="hl-pivot">KPI Name</th><th class="hl-pivot">KPI Value</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr><td class="hl-keep">A</td><td class="hl-keep">2025-01-01</td><td class="hl-pivot">KPI1</td><td class="hl-pivot">10</td></tr>
+                  <tr><td class="hl-keep">A</td><td class="hl-keep">2025-01-01</td><td class="hl-pivot">KPI2</td><td class="hl-pivot">20</td></tr>
+                  <tr><td class="hl-keep">A</td><td class="hl-keep">2025-01-02</td><td class="hl-pivot">KPI1</td><td class="hl-pivot">15</td></tr>
+                  <tr><td class="hl-keep">A</td><td class="hl-keep">2025-01-02</td><td class="hl-pivot">KPI2</td><td class="hl-pivot">25</td></tr>
+                  <tr><td class="hl-keep">B</td><td class="hl-keep">2025-01-01</td><td class="hl-pivot">KPI1</td><td class="hl-pivot">5</td></tr>
+                  <tr><td class="hl-keep">B</td><td class="hl-keep">2025-01-01</td><td class="hl-pivot">KPI2</td><td class="hl-pivot">8</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+var inputData = [], outputData = [], headers = [], storedWorkbook = null;
+var sheetIdx = 0;
+
+function $(id) { return document.getElementById(id); }
+
+function showTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  $('tab-' + tab).classList.add('active');
+  $('cardTool').style.display = tab === 'tool' ? 'flex' : 'none';
+  $('cardGuide').style.display = 'none';
+  $('cardGuide').classList.remove('guide-visible');
+  if (tab === 'guide') {
+    $('cardGuide').style.display = 'flex';
+    if (window.innerWidth <= 600) $('cardGuide').classList.add('guide-visible');
+  }
+}
+
+// Drag & drop
+var dropzone = $('dropzone');
+dropzone.addEventListener('dragover', function(e) { e.preventDefault(); dropzone.classList.add('drag-over'); });
+dropzone.addEventListener('dragleave', function() { dropzone.classList.remove('drag-over'); });
+dropzone.addEventListener('drop', function(e) {
+  e.preventDefault(); dropzone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) {
+    $('fileInput').files = e.dataTransfer.files;
+    $('fileInput').dispatchEvent(new Event('change'));
+  }
+});
+
+function showFile(name) {
+  dropzone.style.display = 'none';
+  $('fileInfoArea').style.display = 'block';
+  $('fileName').textContent = name;
+}
+
+function reset() {
+  dropzone.style.display = '';
+  $('fileInfoArea').style.display = 'none';
+  $('fileInput').value = '';
+  storedWorkbook = null; inputData = []; outputData = []; headers = []; sheetIdx = 0;
+  $('lstColumns').innerHTML = ''; $('lstPivot').innerHTML = '';
+  $('importStatus').textContent = '';
+  $('importProgress').style.display = 'none';
+  $('convertProgress').style.display = 'none';
+  $('runStatus').textContent = '';
+  var sel = $('sheetSelect');
+  sel.innerHTML = '<option>Sheet 1</option>';
+}
+
+function selectSheet(i) {
+  sheetIdx = i;
+  if (storedWorkbook) {
+    var sel = $('sheetSelect');
+    sel.innerHTML = storedWorkbook.SheetNames.map(function(n, j) {
+      return '<option' + (j === i ? ' selected' : '') + '>' + n + '</option>';
+    }).join('');
+    loadSheet();
+  }
+}
+
+function loadSheet() {
+  if (!storedWorkbook) return;
+  var name = storedWorkbook.SheetNames[sheetIdx];
+  processData(XLSX.utils.sheet_to_json(storedWorkbook.Sheets[name], { header: 1, blankrows: false }));
+  $('importStatus').textContent = 'Loaded sheet: ' + name;
+  $('importStatus').style.color = '#10b981';
+  $('importProgress').style.display = 'none';
+}
+
+async function readCSV(file) {
+  var chunk = 4e6, off = 0, txt = '';
+  while (off < file.size) {
+    txt += await file.slice(off, off + chunk).text();
+    off += chunk;
+    updateProgress(Math.round(off / file.size * 100), 'Reading file... ' + Math.round(off / file.size * 100) + '%');
+  }
+  updateProgress(100, 'Parsing data...');
+  Papa.parse(txt, { complete: function(r) { processData(r.data); $('importProgress').style.display = 'none'; }, skipEmptyLines: true });
+}
+
+$('fileInput').addEventListener('change', function() {
+  var f = this.files[0]; if (!f) return; showFile(f.name);
+  if (/\.(csv|txt)$/i.test(f.name)) {
+    storedWorkbook = null; sheetIdx = 0;
+    var sel = $('sheetSelect');
+    sel.innerHTML = /\.txt$/i.test(f.name) ? '<option>TXT</option>' : '<option>CSV</option>';
+    readCSV(f);
+  } else {
+    var r = new FileReader();
+    r.onprogress = function(e) { if (e.lengthComputable) updateProgress(Math.round(e.loaded / e.total * 100), 'Loading file... ' + Math.round(e.loaded / e.total * 100) + '%'); };
+    r.onload = function(e) {
+      try {
+        updateProgress(100, 'Processing workbook...');
+        storedWorkbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+        sheetIdx = 0;
+        var sel = $('sheetSelect');
+        sel.innerHTML = storedWorkbook.SheetNames.map(function(n, i) {
+          return '<option' + (i === 0 ? ' selected' : '') + '>' + n + '</option>';
+        }).join('');
+        loadSheet();
+      } catch (err) { $('importStatus').textContent = 'Error: ' + err.message; $('importStatus').style.color = '#c2002f'; $('importProgress').style.display = 'none'; }
+    };
+    r.readAsArrayBuffer(f);
+  }
+});
+
+$('btnRemoveFile').addEventListener('click', reset);
+
+function processData(data) {
+  if (!data || data.length < 2) { $('importStatus').textContent = 'File must contain headers and at least one data row.'; $('importStatus').style.color = '#c2002f'; return; }
+  headers = (data[0] || []).map(function(h) { return h == null ? '' : String(h); });
+  if (!headers.length) { $('importStatus').textContent = 'No headers detected in the first row.'; $('importStatus').style.color = '#c2002f'; return; }
+  inputData = data.map(function(r) { var a = Array.isArray(r) ? r.slice() : []; while (a.length < headers.length) a.push(''); return a; });
+  ['lstColumns', 'lstPivot'].forEach(function(id) {
+    var s = $(id); s.innerHTML = '';
+    headers.forEach(function(h, i) { var o = new Option(h || '(blank)', i); s.add(o); });
+  });
+  $('importStatus').textContent = (inputData.length - 1) + ' rows loaded';
+  $('importStatus').style.color = '#10b981';
+  $('runStatus').textContent = ''; outputData = [];
+}
+
+function updateProgress(pct, text) {
+  $('importProgress').style.display = 'block';
+  $('importProgressBar').style.width = Math.min(pct, 100) + '%';
+  $('importProgressText').textContent = text || pct + '%';
+}
+
+$('chkSelectAllKeep').addEventListener('change', function() {
+  Array.from($('lstColumns').options).forEach(function(o) { o.selected = this.checked; }, this);
+});
+$('chkSelectAllPivot').addEventListener('change', function() {
+  Array.from($('lstPivot').options).forEach(function(o) { o.selected = this.checked; }, this);
+});
+
+function runConversion() {
+  var keep = Array.from($('lstColumns').selectedOptions).map(function(o) { return +o.value; });
+  var pivot = Array.from($('lstPivot').selectedOptions).map(function(o) { return +o.value; });
+  var inc = $('chkIncludeHeader').checked;
+  if (!keep.length || !pivot.length) { alert('Please select at least one KEEP and one PIVOT column.'); return; }
+  var btn = $('btnRun');
+  btn.disabled = true; btn.textContent = 'Converting...';
+  $('convertProgress').style.display = 'block';
+  $('convertProgressBar').style.width = '0%';
+  $('convertProgressText').textContent = 'Preparing conversion...';
+  outputData = [];
+  var totalRows = inputData.length - 1;
+  var hdrs = keep.map(function(i) { return headers[i] || ''; });
+  if (inc) hdrs.push('Pivot Column Name');
+  hdrs.push('Pivot Value');
+  outputData.push(hdrs);
+  var i = 1;
+  function processChunk() {
+    var chunkSize = Math.max(1, Math.floor(totalRows / 50));
+    var end = Math.min(i + chunkSize, inputData.length);
+    for (; i < end; i++) {
+      var row = inputData[i] || [];
+      pivot.forEach(function(p) {
+        var v = row[p];
+        if (v != null && v !== '') {
+          var r = keep.map(function(k) { return row[k] ?? ''; });
+          if (inc) r.push(headers[p] || '');
+          r.push(v);
+          outputData.push(r);
         }
-
-        function selectSheet(i) { sheetIdx = i; if (storedWorkbook) { renderSheetOpts(storedWorkbook.SheetNames); loadSheet(); } }
-        sheetTrigger.addEventListener('click', e => { e.stopPropagation(); sheetMenu.classList.toggle('hidden'); });
-        document.addEventListener('click', () => sheetMenu.classList.add('hidden'));
-        sheetMenu.addEventListener('click', e => { const o = e.target.closest('.sheet-opt'); if (o) { selectSheet(+o.dataset.index); sheetMenu.classList.add('hidden'); } });
-
-        function reset() {
-            dropzone.classList.remove('hidden'); fileArea.classList.add('hidden'); fileIn.value = '';
-            storedWorkbook = null; inputData = []; outputData = []; headers = []; sheetIdx = 0;
-            $('lstColumns').innerHTML = ''; $('lstPivot').innerHTML = '';
-            renderSheetOpts(['Sheet 1']);
-            $('importStatus').textContent = ''; $('importStatus').className = 'text-xs mt-1.5 block status'; $('importStatus').style.color = 'var(--green)';
-            hideProgress(); hideConvertProgress(); $('runStatus').textContent = '';
-        }
-
-        function loadSheet() {
-            if (!storedWorkbook) return;
-            const name = storedWorkbook.SheetNames[sheetIdx];
-            processData(XLSX.utils.sheet_to_json(storedWorkbook.Sheets[name], { header: 1, blankrows: false }));
-            setStatus('importStatus', 'Loaded sheet: ' + name, 'success');
-            hideProgress();
-        }
-
-        async function readCSV(file) {
-            const chunk = 4e6; let off = 0, txt = '';
-            while (off < file.size) {
-                txt += await file.slice(off, off + chunk).text();
-                off += chunk;
-                updateProgress(Math.round(off / file.size * 100), 'Reading file... ' + Math.round(off / file.size * 100) + '%');
-            }
-            updateProgress(100, 'Parsing data...');
-            Papa.parse(txt, { complete: r => { processData(r.data); hideProgress(); }, skipEmptyLines: true });
-        }
-
-        fileIn.addEventListener('change', function () {
-            const f = this.files[0]; if (!f) return; showFile(f.name);
-            if (/\.(csv|txt)$/i.test(f.name)) {
-                storedWorkbook = null; sheetIdx = 0;
-                renderSheetOpts([/\.txt$/i.test(f.name) ? 'TXT' : 'CSV']);
-                readCSV(f);
-            } else {
-                const r = new FileReader();
-                r.onprogress = e => { if (e.lengthComputable) updateProgress(Math.round(e.loaded / e.total * 100), 'Loading file... ' + Math.round(e.loaded / e.total * 100) + '%'); };
-                r.onload = e => {
-                    try {
-                        updateProgress(100, 'Processing workbook...');
-                        storedWorkbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-                        sheetIdx = 0; renderSheetOpts(storedWorkbook.SheetNames); loadSheet();
-                    } catch (err) { setStatus('importStatus', 'Error: ' + err.message, 'error'); hideProgress(); hideConvertProgress(); }
-                };
-                r.readAsArrayBuffer(f);
-            }
-        });
-
-        $('btnRemoveFile').addEventListener('click', reset);
-
-        function processData(data) {
-            if (!data || data.length < 2) return setStatus('importStatus', 'File must contain headers and at least one data row.', 'error');
-            headers = (data[0] || []).map(h => h == null ? '' : String(h));
-            if (!headers.length) return setStatus('importStatus', 'No headers detected in the first row.', 'error');
-            inputData = data.map(r => { const a = Array.isArray(r) ? r.slice() : []; while (a.length < headers.length) a.push(''); return a; });
-            ['lstColumns', 'lstPivot'].forEach(id => { const s = $(id); s.innerHTML = ''; headers.forEach((h, i) => { const o = new Option(h || '(blank)', i); s.add(o); }); });
-            setStatus('importStatus', inputData.length - 1 + ' rows loaded', 'success');
-            $('runStatus').textContent = ''; outputData = [];
-        }
-
-        const toggleAll = (id, v) => Array.from($(id).options).forEach(o => o.selected = v);
-        $('chkSelectAllKeep').addEventListener('change', function () { toggleAll('lstColumns', this.checked); });
-        $('chkSelectAllPivot').addEventListener('change', function () { toggleAll('lstPivot', this.checked); });
-
-        $('btnRun').addEventListener('click', function () {
-            const keep = Array.from($('lstColumns').selectedOptions).map(o => +o.value);
-            const pivot = Array.from($('lstPivot').selectedOptions).map(o => +o.value);
-            const inc = $('chkIncludeHeader').checked;
-            if (!keep.length || !pivot.length) return alert('Please select at least one KEEP and one PIVOT column.');
-            const btn = this;
-            btn.disabled = true; btn.textContent = 'Converting...';
-            showConvertProgress(0, 'Preparing conversion...'); outputData = [];
-            const totalRows = inputData.length - 1;
-            const hdrs = [...keep.map(i => headers[i] || '')];
-            if (inc) hdrs.push('Pivot Column Name');
-            hdrs.push('Pivot Value');
-            outputData.push(hdrs);
-            let i = 1;
-            function processChunk() {
-                const chunkSize = Math.max(1, Math.floor(totalRows / 50));
-                const end = Math.min(i + chunkSize, inputData.length);
-                for (; i < end; i++) {
-                    const row = inputData[i] || [];
-                    pivot.forEach(p => {
-                        const v = row[p];
-                        if (v != null && v !== '') {
-                            const r = [...keep.map(k => row[k] ?? '')];
-                            if (inc) r.push(headers[p] || '');
-                            r.push(v);
-                            outputData.push(r);
-                        }
-                    });
-                }
-                const pct = Math.round((i - 1) / totalRows * 100);
-                showConvertProgress(pct, 'Converting rows... ' + pct + '%');
-                if (i < inputData.length) {
-                    requestAnimationFrame(processChunk);
-                } else {
-                    const n = Math.max(0, outputData.length - 1);
-                    showConvertProgress(100, 'Completed! ' + n + ' rows generated.');
-                    $('runStatus').textContent = 'Conversion completed. ' + n + ' rows generated and downloaded.';
-                    btn.disabled = false; btn.textContent = 'Run Conversion & Download';
-                    if (n > 0) { const ws = XLSX.utils.aoa_to_sheet(outputData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Output Data'); XLSX.writeFile(wb, 'output-data.csv'); }
-                    setTimeout(hideConvertProgress, 3000);
-                }
-            }
-            processChunk();
-        });
-
-        function setStatus(id, msg, type) { const e = $(id); e.textContent = msg; e.className = 'text-xs mt-1.5 block status'; e.style.color = type === 'error' ? '#F85149' : type === 'success' ? 'var(--green)' : 'var(--gray)'; }
-        function updateProgress(pct, text) { const w = $('importProgress'), b = $('importProgressBar'), l = $('importProgressText'); w.classList.remove('hidden'); b.style.width = Math.min(pct, 100) + '%'; l.textContent = text || pct + '%'; }
-        function hideProgress() { $('importProgress').classList.add('hidden'); }
-        function showConvertProgress(pct, text) { $('convertProgress').classList.remove('hidden'); $('convertProgressBar').style.width = Math.min(pct, 100) + '%'; $('convertProgressText').textContent = text || pct + '%'; }
-        function hideConvertProgress() { $('convertProgress').classList.add('hidden'); }
-    </script>
+      });
+    }
+    var pct = Math.round((i - 1) / totalRows * 100);
+    $('convertProgressBar').style.width = pct + '%';
+    $('convertProgressText').textContent = 'Converting rows... ' + pct + '%';
+    if (i < inputData.length) {
+      requestAnimationFrame(processChunk);
+    } else {
+      var n = Math.max(0, outputData.length - 1);
+      $('convertProgressBar').style.width = '100%';
+      $('convertProgressText').textContent = 'Completed! ' + n + ' rows generated.';
+      $('runStatus').textContent = 'Conversion completed. ' + n + ' rows generated and downloaded.';
+      btn.disabled = false; btn.textContent = 'Run Conversion & Download';
+      if (n > 0) { var ws = XLSX.utils.aoa_to_sheet(outputData); var wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Output Data'); XLSX.writeFile(wb, 'output-data.csv'); }
+      setTimeout(function() { $('convertProgress').style.display = 'none'; }, 3000);
+    }
+  }
+  processChunk();
+}
+</script>
 </body>
 </html>
