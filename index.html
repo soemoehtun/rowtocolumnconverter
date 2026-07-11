@@ -46,7 +46,7 @@ body {
 .form-row.two-col { grid-template-columns: 1fr 1fr; }
 .form-group { display: flex; flex-direction: column; gap: 5px; }
 .form-group label { font-size: 12px; color: #555; font-weight: 500; }
-.form-group label.hint-text { font-size: 11px; color: #6b7280; font-weight: 400; }
+.form-group label.hint-text { font-size: 12px; color: #6b7280; font-weight: 400; }
 .form-group label.chk-label { font-size: 12px; font-weight: 400; display: flex; align-items: center; gap: 4px; cursor: pointer; }
 .form-group label .req { color: #c2002f; margin-left: 2px; }
 select, input[type="number"] {
@@ -54,6 +54,16 @@ select, input[type="number"] {
     padding: 0 10px; font-size: 13px; font-family: inherit; color: #333;
     background: #fff; outline: none; width: 100%;
 }
+.checklist-box {
+    border: 1px solid #d0d0d0; border-radius: 5px; height: 160px; overflow-y: auto;
+    background: #fff; padding: 6px 0; width: 100%;
+}
+.checklist-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+    font-size: 13px; color: #333; cursor: pointer; user-select: none;
+}
+.checklist-item:hover { background: #f4f6f8; }
+.checklist-item input { width: 14px; height: 14px; margin: 0; accent-color: #0083c1; cursor: pointer; }
 select:focus, input:focus { border-color: #0083c1; box-shadow: 0 0 0 3px rgba(0,131,193,0.1); }
 select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-allowed; }
 .btn-row { display: flex; justify-content: flex-end; margin-top: 10px; gap: 10px; }
@@ -122,7 +132,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
     font-size: 11.5px; color: #1a1a2e; margin: 6px 0 4px; line-height: 1.8;
 }
 .transformation-showcase {
-    display: flex; gap: 16px; align-items: center; justify-content: space-between;
+    display: flex; gap: 16px; align-items: flex-start; justify-content: space-between;
     margin-top: 10px; background: #fff; border: 1px solid #e6e8eb; border-radius: 8px; padding: 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
 }
@@ -130,6 +140,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
     flex-shrink: 0; color: #0083c1; font-size: 20px; font-weight: bold;
     display: flex; align-items: center; justify-content: center;
     background: rgba(0,131,193,0.1); width: 36px; height: 36px; border-radius: 50%;
+    margin-top: 40px;
 }
 .transformation-table-wrapper {
     flex: 1; overflow-x: auto;
@@ -161,7 +172,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
     .tab-btn { padding: 10px 13px; font-size: 12px; }
     .page-title { font-size: 20px; font-weight: 900; }
     .tool-card, .guide-card { padding: 16px; border-radius: 0; }
-    .transformation-showcase { flex-direction: column; gap: 12px; padding: 12px; }
+    .transformation-showcase { flex-direction: column; gap: 12px; padding: 12px; align-items: center; }
     .transformation-arrow { transform: rotate(90deg); margin: 4px 0; }
     .card-subtitle { display: none; }
     .form-row.two-col { grid-template-columns: 1fr; }
@@ -241,7 +252,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
             <label class="chk-label">
               <input type="checkbox" id="chkSelectAllKeep" style="width:14px;height:14px;accent-color:#0083c1;"> Select All
             </label>
-            <select id="lstColumns" multiple size="6" style="height:auto;min-height:100px;"></select>
+            <div id="lstColumns" class="checklist-box"></div>
           </div>
           <div class="form-group">
             <label>Columns to Pivot</label>
@@ -254,7 +265,7 @@ select:disabled, input:disabled { background: #f7f7f7; color: #aaa; cursor: not-
                 <input type="checkbox" id="chkSelectAllPivot" style="width:14px;height:14px;accent-color:#0083c1;"> Select All
               </label>
             </div>
-            <select id="lstPivot" multiple size="6" style="height:auto;min-height:100px;"></select>
+            <div id="lstPivot" class="checklist-box"></div>
           </div>
         </div>
 
@@ -459,7 +470,16 @@ function processData(data) {
   inputData = data.map(function(r) { var a = Array.isArray(r) ? r.slice() : []; while (a.length < headers.length) a.push(''); return a; });
   ['lstColumns', 'lstPivot'].forEach(function(id) {
     var s = $(id); s.innerHTML = '';
-    headers.forEach(function(h, i) { var o = new Option(h || '(blank)', i); s.add(o); });
+    headers.forEach(function(h, i) {
+      var lbl = document.createElement('label');
+      lbl.className = 'checklist-item';
+      var chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.value = i;
+      lbl.appendChild(chk);
+      lbl.appendChild(document.createTextNode(' ' + (h || '(blank)')));
+      s.appendChild(lbl);
+    });
   });
   $('importStatus').textContent = (inputData.length - 1) + ' rows loaded';
   $('importStatus').style.color = '#10b981';
@@ -473,15 +493,17 @@ function updateProgress(pct, text) {
 }
 
 $('chkSelectAllKeep').addEventListener('change', function() {
-  Array.from($('lstColumns').options).forEach(function(o) { o.selected = this.checked; }, this);
+  var chk = this.checked;
+  document.querySelectorAll('#lstColumns input[type="checkbox"]').forEach(function(cb) { cb.checked = chk; });
 });
 $('chkSelectAllPivot').addEventListener('change', function() {
-  Array.from($('lstPivot').options).forEach(function(o) { o.selected = this.checked; }, this);
+  var chk = this.checked;
+  document.querySelectorAll('#lstPivot input[type="checkbox"]').forEach(function(cb) { cb.checked = chk; });
 });
 
 function runConversion() {
-  var keep = Array.from($('lstColumns').selectedOptions).map(function(o) { return +o.value; });
-  var pivot = Array.from($('lstPivot').selectedOptions).map(function(o) { return +o.value; });
+  var keep = Array.from(document.querySelectorAll('#lstColumns input:checked')).map(function(cb) { return +cb.value; });
+  var pivot = Array.from(document.querySelectorAll('#lstPivot input:checked')).map(function(cb) { return +cb.value; });
   var inc = $('chkIncludeHeader').checked;
   if (!keep.length || !pivot.length) { alert('Please select at least one KEEP and one PIVOT column.'); return; }
   var btn = $('btnRun');
