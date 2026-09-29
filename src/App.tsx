@@ -3,7 +3,7 @@ import { FileUploader } from './components/FileUploader';
 import { ColumnSelector } from './components/ColumnSelector';
 import { ConversionControls } from './components/ConversionControls';
 import { GuideTab } from './components/GuideTab';
-import { ParsedFile, ConversionConfig, DataRow, SampleDataset } from './types';
+import { ParsedFile, ConversionConfig, DataRow } from './types';
 import { unpivotData } from './utils/converter';
 
 type TabId = 'tool' | 'guide';
@@ -24,28 +24,6 @@ export function App() {
   const [, setOutputRows] = useState<DataRow[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  const handleLoadSample = (sample: SampleDataset) => {
-    setCurrentFile({
-      fileName: sample.fileName,
-      fileSize: 1024 * 12,
-      sheets: ['SampleData'],
-      selectedSheet: 'SampleData',
-      headers: sample.headers,
-      rows: sample.rows
-    });
-    const newConfig: ConversionConfig = {
-      keepColumns: sample.defaultKeep,
-      pivotColumns: sample.defaultPivot,
-      includePivotColumnName: true,
-      pivotNameHeader: sample.pivotNameHeader,
-      pivotValueHeader: sample.pivotValueHeader,
-      skipEmptyValues: false
-    };
-    setConfig(newConfig);
-    setOutputRows(unpivotData(sample.rows, newConfig));
-    setErrorMessage(null);
-  };
 
   const handleFileParsed = (parsed: ParsedFile) => {
     setCurrentFile(parsed);
@@ -142,7 +120,6 @@ export function App() {
                       onFileParsed={handleFileParsed}
                       onSheetChanged={handleSheetChanged}
                       onClearFile={handleClearFile}
-                      onLoadSample={handleLoadSample}
                       isLoading={isLoading}
                       setIsLoading={setIsLoading}
                       errorMessage={errorMessage}
