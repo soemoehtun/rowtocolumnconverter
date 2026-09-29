@@ -21,7 +21,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<TabId>('tool');
   const [currentFile, setCurrentFile] = useState<ParsedFile | null>(null);
   const [config, setConfig] = useState<ConversionConfig>(EMPTY_CONFIG);
-  const [, setOutputRows] = useState<DataRow[]>([]);
+  const [outputRows, setOutputRows] = useState<DataRow[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
@@ -70,19 +70,19 @@ export function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-white sm:bg-[#e8ecf1] sm:px-4 sm:py-6">
-      <div className="mx-auto w-full max-w-[620px]">
+    <div className="min-h-screen bg-[#0f2744] sm:bg-[#eceff2] sm:px-4 sm:py-8">
+      <div className="mx-auto w-full max-w-[672px]">
         <div className="bg-white min-h-screen sm:min-h-0 sm:rounded-xl sm:shadow-[0_1px_3px_0_rgba(0,0,0,0.08)] overflow-hidden">
           {/* Navy header */}
-          <header className="bg-[#0b2542] px-4 sm:px-5 pt-[max(1rem,env(safe-area-inset-top))] sm:pt-5">
-            <h1 className="text-[20px] sm:text-[18px] font-extrabold text-white tracking-tight leading-tight">
+          <header className="bg-[#0f2744] px-5 sm:px-7 pt-[max(1.25rem,env(safe-area-inset-top))] sm:pt-7">
+            <h1 className="text-[21px] sm:text-[23px] font-bold text-white tracking-tight leading-tight">
               Row-to-Column Conversion Tool
             </h1>
-            <p className="mt-1 sm:mt-0.5 text-[12px] text-slate-200 sm:text-slate-300">
+            <p className="mt-1 text-[13px] sm:text-[14px] text-slate-300">
               Transform wide-format datasets into long format by unpivoting selected columns.
             </p>
 
-            <nav className="mt-3 sm:mt-3.5 flex gap-0 sm:gap-6 -mx-4 px-0 sm:mx-0" aria-label="Main tabs">
+            <nav className="mt-5 flex gap-5 sm:gap-8 -mx-5 px-0 sm:mx-0" aria-label="Main tabs">
               {tabs.map((t) => {
                 const active = activeTab === t.id;
                 return (
@@ -91,7 +91,7 @@ export function App() {
                     type="button"
                     onClick={() => setActiveTab(t.id)}
                     aria-current={active ? 'page' : undefined}
-                    className={`px-4 sm:px-0 pb-2.5 text-[13px] transition cursor-pointer ${
+                    className={`px-5 sm:px-0 pb-3 text-[14px] sm:text-[15px] transition cursor-pointer ${
                       active
                         ? 'text-white font-semibold border-b-2 border-white -mb-px'
                         : 'text-slate-300 hover:text-white'
@@ -105,13 +105,13 @@ export function App() {
           </header>
 
           {/* Body */}
-          <main className="px-4 sm:px-5 py-4 pb-8 sm:pb-4">
+          <main className="px-5 sm:px-7 py-5 sm:py-7 pb-8 sm:pb-7">
             {activeTab === 'tool' ? (
-              <div className="space-y-4">
+              <div className="space-y-5 sm:space-y-6">
                 {/* Import File */}
                 <section>
-                  <h2 className="text-[15px] sm:text-[13px] font-bold text-slate-900">Import File</h2>
-                  <p className="text-[12px] text-slate-500">
+                  <h2 className="text-[16px] font-semibold text-slate-900">Import File</h2>
+                  <p className="text-[13px] sm:text-sm text-slate-500">
                     Drag and drop multiple Excel or CSV files
                   </p>
                   <div className="mt-2">
@@ -132,11 +132,11 @@ export function App() {
 
                 {/* Select Columns — always visible, empty until a file loads */}
                 <section>
-                  <h2 className="text-[15px] sm:text-[13px] font-bold text-slate-900">Select Columns</h2>
-                  <p className="text-[12px] text-slate-500">
+                  <h2 className="text-[18px] font-semibold text-slate-900">Select Columns</h2>
+                  <p className="text-[14px] text-slate-500 mt-0.5">
                     Choose which columns to keep and which to pivot
                   </p>
-                  <div className="mt-2.5">
+                  <div className="mt-4">
                     <ColumnSelector
                       headers={currentFile ? currentFile.headers : []}
                       config={config}
@@ -149,6 +149,7 @@ export function App() {
                 <ConversionControls
                   rows={currentFile ? currentFile.rows : []}
                   config={config}
+                  outputRows={outputRows}
                   setOutputRows={setOutputRows}
                   sourceFileName={currentFile?.fileName}
                   onClearAll={handleClearFile}

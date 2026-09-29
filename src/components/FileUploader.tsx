@@ -125,7 +125,7 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
             isDragOver ? 'border-[#0284c7] ring-2 ring-[#0284c7]/20' : 'border-slate-300'
           }`}
         >
-          <div className="flex flex-row items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2">
             <div className="min-w-0 flex items-start gap-2">
               <span className="text-base leading-none mt-0.5">📁</span>
               <div className="min-w-0">
@@ -148,10 +148,10 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
               onClick={onClearFile}
               aria-label="Remove file"
               title="Remove file"
-              className="shrink-0 self-start sm:self-center w-6 h-6 rounded-md flex items-center justify-center text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer transition"
+              className="shrink-0 w-7 h-7 rounded-md text-slate-400 hover:text-red-600 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition"
             >
               <svg
-                className="w-3.5 h-3.5"
+                className="w-4 h-4"
                 viewBox="0 0 16 16"
                 fill="none"
                 stroke="currentColor"
@@ -210,7 +210,6 @@ export const FileUploader: React.FC<FileUploaderProps> = ({
           </button>
         </div>
       )}
-
     </div>
   );
 };

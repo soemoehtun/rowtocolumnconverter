@@ -5,6 +5,7 @@ import { unpivotData, downloadCSV } from '../utils/converter';
 interface ConversionControlsProps {
   rows: DataRow[];
   config: ConversionConfig;
+  outputRows: DataRow[];
   setOutputRows: (rows: DataRow[]) => void;
   sourceFileName?: string;
   onClearAll: () => void;
@@ -13,6 +14,7 @@ interface ConversionControlsProps {
 export const ConversionControls: React.FC<ConversionControlsProps> = ({
   rows,
   config,
+  outputRows,
   setOutputRows,
   sourceFileName,
   onClearAll
@@ -54,7 +56,7 @@ export const ConversionControls: React.FC<ConversionControlsProps> = ({
       {status && (
         <div
           role={status.type === 'error' ? 'alert' : 'status'}
-          className={`mb-2 rounded-md border px-2.5 py-1.5 text-[12px] ${
+          className={`mb-3 rounded-md border px-3 py-2 text-sm ${
             status.type === 'error'
               ? 'border-red-200 bg-red-50 text-red-700'
               : 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -68,7 +70,7 @@ export const ConversionControls: React.FC<ConversionControlsProps> = ({
         <button
           type="button"
           onClick={handleClear}
-          className="flex-1 sm:flex-none rounded-md border border-slate-300 bg-white px-4 py-2 sm:py-1.5 text-[13px] text-slate-600 hover:bg-slate-50 cursor-pointer transition"
+          className="flex-1 sm:flex-none rounded-md border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 cursor-pointer transition"
         >
           Clear All
         </button>
@@ -76,11 +78,40 @@ export const ConversionControls: React.FC<ConversionControlsProps> = ({
           type="button"
           onClick={handleRun}
           disabled={isProcessing}
-          className="flex-[1.1] sm:flex-none rounded-md bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 px-4 py-2 sm:py-1.5 text-[13px] font-bold text-white shadow-md shadow-emerald-500/20 disabled:opacity-60 cursor-pointer transition"
+          className="flex-[1.1] sm:flex-none rounded-md bg-[#2c6bb3] hover:bg-[#255fa3] px-5 py-2.5 text-sm font-semibold text-white shadow-sm disabled:opacity-60 cursor-pointer transition"
         >
           {isProcessing ? 'Converting...' : 'Run Conversion'}
         </button>
       </div>
+
+      {rows.length > 0 && (
+        <div className="mt-6 border-t border-slate-200 pt-5">
+          <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wide text-slate-500">
+            Result
+          </h3>
+          <div className="rounded-md border border-slate-200 bg-slate-100/70 px-4 py-1">
+            {[
+              { label: 'Input rows:', value: rows.length.toLocaleString() },
+              { label: 'Columns kept:', value: String(config.keepColumns.length) },
+              { label: 'Columns pivoted:', value: String(config.pivotColumns.length) },
+              {
+                label: 'Output rows:',
+                value: (outputRows.length || rows.length * config.pivotColumns.length).toLocaleString()
+              }
+            ].map((item, index, values) => (
+              <div
+                key={item.label}
+                className={`flex items-center justify-between gap-4 py-2.5 ${
+                  index < values.length - 1 ? 'border-b border-slate-200' : ''
+                }`}
+              >
+                <span className="text-sm font-medium text-slate-700">{item.label}</span>
+                <span className="font-mono text-sm text-slate-900">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

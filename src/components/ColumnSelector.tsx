@@ -40,36 +40,36 @@ export const ColumnSelector: React.FC<ColumnSelectorProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-3">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-5 gap-y-5">
       {/* Columns to Keep */}
       <div>
-        <p className="text-[13px] text-slate-900">Columns to Keep</p>
-        <p className="text-[11px] text-slate-500">
+        <p className="text-sm font-medium text-slate-900">Columns to Keep</p>
+        <p className="mt-0.5 text-[13px] text-slate-500">
           These columns appear in every output row
         </p>
-        <label className="mt-1 inline-flex items-center gap-1.5 text-[12px] text-slate-700 cursor-pointer">
+        <label className="mt-2 inline-flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer">
           <input
             type="checkbox"
             checked={isAllKeepSelected}
             onChange={(e) => handleKeepSelectAll(e.target.checked)}
             disabled={headers.length === 0}
-            className="w-3.5 h-3.5 rounded disabled:opacity-40"
+            className="h-4 w-4 rounded disabled:opacity-40"
           />
           Select All
         </label>
-        <div className="mt-1.5 h-[96px] overflow-y-auto rounded-md border border-slate-300 bg-white p-1">
+        <div className="mt-1.5 h-[112px] overflow-y-auto rounded-md border border-slate-300 bg-white p-1.5">
           {headers.map((col) => {
             const checked = config.keepColumns.includes(col);
             return (
               <label
                 key={`keep-${col}`}
-                className="flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[12px] text-slate-800 hover:bg-slate-50 cursor-pointer"
+                className="flex items-center gap-2 rounded px-1.5 py-1 text-[13px] text-slate-800 hover:bg-slate-50 cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => handleToggleKeep(col)}
-                  className="w-3.5 h-3.5 rounded shrink-0"
+                  className="h-4 w-4 rounded shrink-0"
                 />
                 <span className="truncate">{col}</span>
               </label>
@@ -80,46 +80,48 @@ export const ColumnSelector: React.FC<ColumnSelectorProps> = ({
 
       {/* Columns to Pivot */}
       <div>
-        <p className="text-[13px] text-slate-900">Columns to Pivot</p>
-        <p className="text-[11px] text-slate-500">
+        <p className="text-sm font-medium text-slate-900">
+          Columns to Pivot <span className="text-red-500">*</span>
+        </p>
+        <p className="mt-0.5 text-[13px] text-slate-500">
           These columns are converted to rows
         </p>
-        <div className="mt-1 flex items-center flex-wrap gap-x-3 gap-y-0.5">
-          <label className="inline-flex items-center gap-1.5 text-[12px] text-slate-700 cursor-pointer">
+        <div className="mt-2 flex min-h-5 items-center flex-wrap gap-x-4 gap-y-1">
+          <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer">
             <input
               type="checkbox"
               checked={config.includePivotColumnName}
               onChange={(e) =>
                 onChangeConfig({ ...config, includePivotColumnName: e.target.checked })
               }
-              className="w-3.5 h-3.5 rounded"
+              className="h-4 w-4 rounded"
             />
             Include Pivot Column Name
           </label>
-          <label className="inline-flex items-center gap-1.5 text-[12px] text-slate-700 cursor-pointer">
+          <label className="inline-flex items-center gap-2 text-[13px] text-slate-700 cursor-pointer">
             <input
               type="checkbox"
               checked={isAllPivotSelected}
               onChange={(e) => handlePivotSelectAll(e.target.checked)}
               disabled={headers.length === 0}
-              className="w-3.5 h-3.5 rounded disabled:opacity-40"
+              className="h-4 w-4 rounded disabled:opacity-40"
             />
             Select All
           </label>
         </div>
-        <div className="mt-1.5 h-[96px] overflow-y-auto rounded-md border border-slate-300 bg-white p-1">
+        <div className="mt-1.5 h-[112px] overflow-y-auto rounded-md border border-slate-300 bg-white p-1.5">
           {headers.map((col) => {
             const checked = config.pivotColumns.includes(col);
             return (
               <label
                 key={`pivot-${col}`}
-                className="flex items-center gap-1.5 rounded px-1.5 py-0.5 text-[12px] text-slate-800 hover:bg-slate-50 cursor-pointer"
+                className="flex items-center gap-2 rounded px-1.5 py-1 text-[13px] text-slate-800 hover:bg-slate-50 cursor-pointer"
               >
                 <input
                   type="checkbox"
                   checked={checked}
                   onChange={() => handleTogglePivot(col)}
-                  className="w-3.5 h-3.5 rounded shrink-0"
+                  className="h-4 w-4 rounded shrink-0"
                 />
                 <span className="truncate">{col}</span>
               </label>
